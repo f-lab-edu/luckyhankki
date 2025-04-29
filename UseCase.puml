@@ -1,0 +1,63 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor Customer
+actor Seller
+actor Admin
+
+rectangle "럭키한끼" {
+
+    (회원가입) as Register
+    (로그인) as Login
+
+    (가게 관리) as ManageStore
+    (가게 승인) as ApproveStore
+    (상품 관리) as ManageProduct
+
+    (상품 조회) as SearchProduct
+    (리뷰 조회) as SearchReview
+    (예약) as ProductReserve
+    (결제) as Payment
+    (픽업 예약 조회) as PickupList
+    (픽업 완료 처리) as PickupComplete
+    (리뷰 작성) as WriteReview
+    (상품 신고) as ReportProduct
+    (신고 조치) as HandleReports
+
+    (계정 관리) as ManageAccounts
+}
+
+' 액터 연결
+Customer --> Register
+Seller --> Register
+
+Customer --> Login
+Seller --> Login
+Admin --> Login
+
+Seller --> ManageStore
+Admin --> ApproveStore
+
+ManageStore ..> ApproveStore : <<include>>
+
+Seller --> ManageProduct
+
+Customer --> SearchProduct
+SearchProduct ..> SearchReview : <<include>>
+Seller --> SearchReview
+
+Customer --> ProductReserve
+ProductReserve ..> Payment : <<include>>
+
+Seller --> PickupList
+Seller --> PickupComplete
+
+Customer --> WriteReview
+Customer --> ReportProduct
+ReportProduct ..> HandleReports : <<include>>
+
+Admin --> ManageAccounts
+Admin --> HandleReports
+
+@enduml
