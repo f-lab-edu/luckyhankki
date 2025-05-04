@@ -1,0 +1,65 @@
+@startuml
+package "럭키한끼" {
+
+  interface Auth
+  interface ManageStore
+  interface ProductDetails
+  interface ReservationDetails
+  interface Payment
+  interface Pickup
+  interface ManageReview
+  interface MapAPI
+  interface PaymentAPI
+
+  component AuthService {
+    Auth -- [AuthService]
+    [AuthService] ..> MapAPI
+  }
+
+  component StoreService {
+    ManageStore -- [StoreService]
+    [StoreService] ..> MapAPI
+  }
+
+  component Product {
+    ProductDetails -- [Product]
+  }
+
+  component ReservationService {
+    ReservationDetails -- [ReservationService]
+    [ReservationService] ..> ProductDetails
+    [ReservationService] ..> Payment
+  }
+
+  component PaymentService {
+    Payment -- [PaymentService]
+    [PaymentService] ..> PaymentAPI
+  }
+
+  component PickupService {
+    Pickup -- [PickupService]
+    [PickupService] ..> ReservationDetails
+    [PickupService] ..> ManageReview
+  }
+
+  component ReviewService {
+    ManageReview -- [ReviewService]
+  }
+
+  component MapAdapter {
+    MapAPI -- [MapAdapter]
+  }
+
+  note right of [MapAdapter]
+    카카오지도 API 연동
+  end note
+
+  component PaymentAdapter {
+    PaymentAPI -- [PaymentAdapter]
+  }
+
+  note right of [PaymentAdapter]
+    토스페이 API 연동
+  end note
+}
+@enduml
