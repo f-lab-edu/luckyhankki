@@ -1,0 +1,32 @@
+@startuml
+' 위치 기반 상품 목록 조회 + 상품 상세 정보 조회 시퀀스 다이어그램
+actor Customer
+
+participant ProductService
+participant StoreRepository
+participant ProductRepository
+participant ReviewRepository
+
+== 상품 목록 조회 ==
+Customer -> ProductService : 상품 목록 조회 요청
+ProductService -> StoreRepository : 위치 기반 가게 조회 (반경 내)
+StoreRepository --> ProductService : 가게 ID 리스트 반환
+
+ProductService -> ProductRepository : 조건에 맞는 상품 리스트 조회
+ProductRepository --> ProductService : 상품 리스트 반환
+ProductService --> Customer : 상품 목록 반환
+
+== 상품 상세 정보 조회 ==
+Customer -> ProductService : 상품 상세 정보 요청 (상품 ID)
+ProductService -> ProductRepository : 상품 상세 조회
+ProductRepository --> ProductService : 상품 기본 정보 반환
+
+ProductService -> StoreRepository : 해당 가게 정보 조회
+StoreRepository --> ProductService : 가게 정보 반환
+
+ProductService -> ReviewRepository : 상품 평점 및 리뷰, 키워드 통계 조회
+ReviewRepository --> ProductService : 평점, 키워드 통계 반환
+
+ProductService --> Customer : 상품 상세 정보 응답
+
+@enduml

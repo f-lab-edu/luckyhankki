@@ -1,0 +1,31 @@
+@startuml
+'판매자가 가게를 등록/수정하면, 관리자는 이를 승인하는 가게 관리 시퀀스 다이어그램
+actor Seller
+actor Admin
+
+participant StoreService
+participant StoreRepository
+participant AdminService
+participant MapAdapter
+
+== 판매자 가게 등록/수정==
+Seller -> StoreService : 가게 정보 등록/수정 요청
+StoreService -> MapAdapter : 주소 정보 요청
+MapAdapter --> StoreService : 주소 정보 반환
+
+StoreService -> StoreRepository : 가게 정보 저장 (승인 대기 상태)
+StoreRepository --> StoreService : 저장 완료
+StoreService --> Seller : 등록/수정 요청 완료 (승인 대기 안내)
+
+== 관리자 승인 ==
+Admin -> AdminService : 승인 요청 목록 확인
+AdminService --> StoreRepository : 승인 대기 가게 리스트 조회
+StoreRepository -> AdminService : 승인 대기 리스트 반환
+AdminService --> Admin : 승인 대기 가게 리스트 응답
+
+Admin -> AdminService : 가게 정보 승인
+AdminService -> StoreRepository : 가게 상태 승인 처리
+StoreRepository --> AdminService : 승인 완료
+AdminService --> Admin : 승인 처리 결과 응답
+
+@enduml
