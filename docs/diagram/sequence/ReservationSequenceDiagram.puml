@@ -1,0 +1,52 @@
+@startuml
+'예약 및 예약 내역 조회, 예약 취소 시퀀스 다이어그램
+actor Customer
+
+participant ReservationService
+participant Product
+participant PaymentService
+participant PaymentAdapter
+participant ReservationRepository
+
+== 예약 ==
+Customer -> ReservationService : 상품 예약 요청
+ReservationService -> Product : 상품 재고 확인
+Product --> ReservationService : 재고 유무 결과
+
+alt 재고 부족
+    ReservationService --> Customer : 예약 실패 (재고 부족)
+else 재고 충분
+    ReservationService -> PaymentService : 결제 요청
+    PaymentService -> PaymentAdapter : 결제 처리 (모킹)
+    PaymentAdapter --> PaymentService : 결제 성공 여부
+
+    alt 결제 성공
+        PaymentService --> ReservationService : 결제 성공 알림
+        ReservationService -> ReservationRepository : 예약 정보 저장
+        ReservationRepository --> ReservationService : 저장 완료
+        ReservationService -> Product : 재고 감소
+        ReservationService --> Customer : 예약 확정 응답
+    else 결제 실패
+        PaymentService --> ReservationService : 결제 실패 알림
+        ReservationService --> Customer : 예약 실패 (결제 오류)
+    end
+end
+
+== 예약 내역 조회 ==
+Customer -> ReservationService : 예약 목록 요청
+ReservationService -> ReservationRepository : 사용자 예약 목록 조회
+ReservationRepository --> ReservationService : 예약 목록 반환
+ReservationService --> Customer : 예약 목록 응답
+
+== 예약 취소 ==
+Customer -> ReservationService : 예약 취소 요청
+ReservationService -> PaymentService : 결제 취소 요청
+PaymentService -> PaymentAdapter : 결제 취소 요청
+PaymentAdapter --> PaymentService : 결제 취소 완료
+PaymentService -> Product : 재고 증가
+PaymentService --> ReservationService : 결제 취소 확인
+ReservationService -> ReservationRepository : 예약 상태 변경(취소)
+ReservationRepository --> ReservationService : 변경 완료
+ReservationService --> Customer : 예약 취소 완료
+
+@enduml

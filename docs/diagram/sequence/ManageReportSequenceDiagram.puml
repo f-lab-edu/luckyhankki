@@ -1,0 +1,27 @@
+@startuml
+'관리자가 상품 신고 내역 확인 및 조치하는 시퀀스 다이어그램
+actor Admin
+
+participant ReportService
+participant ReportRepository
+participant StoreRepository
+
+Admin -> ReportService : 신고 내역 조회 요청
+ReportService -> ReportRepository : 신고 내역 조회
+ReportRepository --> ReportService : 신고 리스트 반환
+ReportService --> Admin : 신고 리스트 반환
+
+Admin -> ReportService : 신고 조치 요청 (신고 ID)
+ReportService -> ReportRepository : 신고 조치 상태 등록
+ReportService -> StoreRepository : 가게 경고 누적 횟수 증가
+StoreRepository --> ReportService : 누적 횟수 반환
+
+alt 누적 경고 < 3
+    ReportService --> Admin : 경고 조치 완료
+else 누적 경고 >= 3
+    ReportService -> StoreRepository : 가게 상태 '영구제명' 처리
+    StoreRepository --> ReportService : 처리 완료
+    ReportService --> Admin : 가게 영구제명 처리 완료
+end
+
+@enduml

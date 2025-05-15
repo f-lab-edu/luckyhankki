@@ -1,0 +1,28 @@
+@startuml
+' 로그인 시퀀스 다이어그램
+actor User
+
+participant AuthService
+participant UserRepository
+participant EmailService
+
+User -> AuthService : 로그인 요청
+AuthService -> UserRepository : 사용자 정보 조회
+UserRepository --> AuthService : 사용자 정보 반환
+
+alt 로그인 실패 횟수 < 5
+    AuthService -> AuthService : 비밀번호 검증
+    alt 비밀번호 일치
+        AuthService --> User : 로그인 성공
+    else 비밀번호 불일치
+        AuthService -> UserRepository : 실패 횟수 증가
+        AuthService --> User : 로그인 실패
+    end
+else 로그인 실패 횟수 >= 5
+    AuthService ->> EmailService : 임시 비밀번호 이메일 전송(모킹)
+
+    AuthService -> UserRepository : 계정 잠금 처리
+    AuthService --> User : 로그인 실패
+end
+
+@enduml

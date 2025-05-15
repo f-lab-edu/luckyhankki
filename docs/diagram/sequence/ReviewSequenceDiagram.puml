@@ -1,0 +1,22 @@
+@startuml
+'일반 사용자가 픽업 완료 후 리뷰를 작성하는 시퀀스 다이어그램
+actor Customer
+
+participant ReviewService
+participant ReservationRepository
+participant KeywordRepository
+participant ReviewRepository
+
+Customer -> ReviewService : 리뷰 작성 요청
+ReviewService -> ReservationRepository : 해당 예약 픽업 완료 여부 확인
+ReservationRepository --> ReviewService : 픽업 완료 여부 응답
+
+ReviewService -> KeywordRepository : 키워드 목록 조회
+KeywordRepository --> ReviewService : 키워드 목록 반환
+
+ReviewService -> ReviewRepository : 리뷰 등록
+ReviewRepository --> ReviewService : 등록 완료
+
+ReviewService --> Customer : 리뷰 작성 완료
+
+@enduml

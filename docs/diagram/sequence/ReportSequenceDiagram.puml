@@ -1,0 +1,17 @@
+@startuml
+'일반 사용자가 픽업 완료 후 신고를 작성하는 시퀀스 다이어그램
+actor Customer
+
+participant ReservationRepository
+participant ReportService
+participant ReportRepository
+
+Customer -> ReservationRepository : 픽업 완료 여부 조회
+ReservationRepository --> Customer : 픽업 완료 여부 응답
+
+Customer -> ReportService : 신고 작성 요청
+ReportService -> ReportRepository : 신고 정보 저장
+ReportRepository --> ReportService : 저장 완료
+ReportService --> Customer : 신고 접수 완료 응답
+
+@enduml
