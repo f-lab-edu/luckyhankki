@@ -35,12 +35,11 @@ public class SellerService {
 
         Seller savedSeller = repository.save(seller);
 
-        SellerResponseDTO sellerResponseDTO = new SellerResponseDTO();
-        sellerResponseDTO.setBusinessNumber(seller.getBusinessNumber());
-        sellerResponseDTO.setName(savedSeller.getName());
-        sellerResponseDTO.setEmail(savedSeller.getEmail());
-
-        return sellerResponseDTO;
+        return new SellerResponseDTO(
+                savedSeller.getBusinessNumber(),
+                savedSeller.getName(),
+                savedSeller.getEmail()
+        );
     }
 
 }

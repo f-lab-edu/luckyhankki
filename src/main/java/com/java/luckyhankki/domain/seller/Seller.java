@@ -7,9 +7,11 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(indexes = {@Index(name = "unq_seller_businessnumber", columnList = "businessNumber", unique = true)})
 public class Seller {
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue
     @Column(name = "seller_id")
     private Long id;
 
