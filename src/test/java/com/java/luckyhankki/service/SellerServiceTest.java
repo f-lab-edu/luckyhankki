@@ -2,8 +2,8 @@ package com.java.luckyhankki.service;
 
 import com.java.luckyhankki.domain.seller.Seller;
 import com.java.luckyhankki.domain.seller.SellerRepository;
-import com.java.luckyhankki.dto.SellerRequestDTO;
-import com.java.luckyhankki.dto.SellerResponseDTO;
+import com.java.luckyhankki.dto.SellerRequest;
+import com.java.luckyhankki.dto.SellerResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,7 +30,7 @@ class SellerServiceTest {
     @DisplayName("판매자 회원가입 성공")
     void join_success() {
         // given
-        SellerRequestDTO requestDto = new SellerRequestDTO(
+        SellerRequest request = new SellerRequest(
                 "1234567890", "홍길동", "admin1234", "test@test.com"
         );
 
@@ -39,12 +39,12 @@ class SellerServiceTest {
                 .then(returnsFirstArg());
 
         // when
-        SellerResponseDTO responseDto = sellerService.join(requestDto);
+        SellerResponse responseDto = sellerService.join(request);
 
         // then
-        assertEquals("1234567890", responseDto.getBusinessNumber());
-        assertEquals("홍길동", responseDto.getName());
-        assertEquals("test@test.com", responseDto.getEmail());
+        assertEquals("1234567890", responseDto.businessNumber());
+        assertEquals("홍길동", responseDto.name());
+        assertEquals("test@test.com", responseDto.email());
 
         //verify(): 테스트 대상 코드가 특정 메서드를 실제로 호출했는지 확인하는 데 사용
         verify(sellerRepository).save(any());
@@ -54,7 +54,7 @@ class SellerServiceTest {
     @DisplayName("사업자등록번호 중복 시 예외 발생")
     void join_throwsException_whenBusinessNumberExists() {
         // given
-        SellerRequestDTO requestDTO = new SellerRequestDTO(
+        SellerRequest requestDTO = new SellerRequest(
                 "1234567890", "홍길동", "admin1234", "test@test.com"
         );
 

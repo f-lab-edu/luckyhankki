@@ -1,7 +1,7 @@
 package com.java.luckyhankki.controller;
 
-import com.java.luckyhankki.dto.SellerRequestDTO;
-import com.java.luckyhankki.dto.SellerResponseDTO;
+import com.java.luckyhankki.dto.SellerRequest;
+import com.java.luckyhankki.dto.SellerResponse;
 import com.java.luckyhankki.service.SellerService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -22,10 +22,10 @@ public class SellerController {
     }
 
     @PostMapping
-    public ResponseEntity<SellerResponseDTO> createSeller(@Valid @RequestBody SellerRequestDTO seller) {
-        SellerResponseDTO sellerResponseDTO = service.join(seller);
+    public ResponseEntity<SellerResponse> createSeller(@Valid @RequestBody SellerRequest seller) {
+        SellerResponse sellerResponse = service.join(seller);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(sellerResponseDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(sellerResponse);
     }
 
 }
