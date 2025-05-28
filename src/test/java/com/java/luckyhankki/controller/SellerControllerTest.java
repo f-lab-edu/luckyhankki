@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -49,6 +50,25 @@ class SellerControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.businessNumber").value("1234567890"))
+                .andExpect(jsonPath("$.name").value("홍길동"))
+                .andExpect(jsonPath("$.email").value("test@test.com"));
+    }
+
+    @Test
+    @DisplayName("판매자 단건 조회 웹 테스트")
+    void getSeller() throws Exception {
+        //given
+        String businessNumber = "1234567890";
+        SellerResponse response = new SellerResponse(
+                "1234567890", "홍길동", "test@test.com"
+        );
+
+        given(sellerService.findSellerByBusinessNumber(businessNumber))
+                .willReturn(response);
+
+        // when & then
+        mockMvc.perform(get("/sellers/{businessNumber}", businessNumber))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("홍길동"))
                 .andExpect(jsonPath("$.email").value("test@test.com"));
     }
