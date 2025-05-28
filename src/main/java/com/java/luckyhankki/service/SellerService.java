@@ -42,4 +42,15 @@ public class SellerService {
         );
     }
 
+    /**
+     * 판매자 단건 조회
+     * TODO Custom Exception 만들기
+     */
+    @Transactional(readOnly = true)
+    public SellerResponse findSellerByBusinessNumber(String businessNumber) {
+        Seller seller = repository.findByBusinessNumber(businessNumber)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 판매자입니다."));
+
+        return new SellerResponse(seller.getBusinessNumber(), seller.getName(), seller.getEmail());
+    }
 }

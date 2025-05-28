@@ -6,10 +6,7 @@ import com.java.luckyhankki.service.SellerService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/sellers")
@@ -28,4 +25,10 @@ public class SellerController {
         return ResponseEntity.status(HttpStatus.CREATED).body(sellerResponse);
     }
 
+    @GetMapping("/{businessNumber}")
+    public ResponseEntity<SellerResponse> getSeller(@PathVariable String businessNumber) {
+        SellerResponse sellerResponse = service.findSellerByBusinessNumber(businessNumber);
+
+        return ResponseEntity.status(HttpStatus.OK).body(sellerResponse);
+    }
 }

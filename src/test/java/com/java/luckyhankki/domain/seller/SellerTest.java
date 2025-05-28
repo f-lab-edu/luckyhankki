@@ -9,6 +9,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -31,5 +32,23 @@ class SellerTest {
         assertThat(optionalSeller).isPresent();
         Seller foundSeller = optionalSeller.get();
         assertThat(foundSeller.getBusinessNumber()).isEqualTo("1234567890");
+    }
+
+    @Test
+    @DisplayName("동일한 사업자등록번호로 조회하면 해당 사업자등록번호를 갖는 판매자가 단건 조회된다.")
+    void should_find_same_seller_by_business_number() {
+        //given
+        String businessNumber = "1234567890";
+        Seller seller = Seller.create(businessNumber, "판매자1", "password123", "seller@test.com");
+
+        //when
+        repository.save(seller);
+        Optional<Seller> optionalSeller = repository.findByBusinessNumber(businessNumber);
+
+        //then
+        //assertTrue(boolean condition, String message) : true임을 보장하고, false이면 message 출력
+        assertTrue(optionalSeller.isPresent(), "해당 사업자등록번호를 갖는 판매자가 없음: " + businessNumber);
+        Seller foundSeller = optionalSeller.get();
+        assertThat(foundSeller.getBusinessNumber()).isEqualTo(businessNumber);
     }
 }
