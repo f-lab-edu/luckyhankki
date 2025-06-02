@@ -43,12 +43,10 @@ class SellerTest {
 
         //when
         repository.save(seller);
-        Optional<Seller> optionalSeller = repository.findByBusinessNumber(businessNumber);
+        Optional<SellerProjection> optionalSeller = repository.findByBusinessNumber(businessNumber);
 
         //then
-        //assertTrue(boolean condition, String message) : true임을 보장하고, false이면 message 출력
         assertTrue(optionalSeller.isPresent(), "해당 사업자등록번호를 갖는 판매자가 없음: " + businessNumber);
-        Seller foundSeller = optionalSeller.get();
-        assertThat(foundSeller.getBusinessNumber()).isEqualTo(businessNumber);
+        assertThat(optionalSeller.get().getName()).isEqualTo(seller.getName());
     }
 }

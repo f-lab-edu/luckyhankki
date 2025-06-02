@@ -1,13 +1,13 @@
 package com.java.luckyhankki.service;
 
 import com.java.luckyhankki.domain.seller.Seller;
+import com.java.luckyhankki.domain.seller.SellerProjection;
 import com.java.luckyhankki.domain.seller.SellerRepository;
 import com.java.luckyhankki.dto.SellerRequest;
 import com.java.luckyhankki.dto.SellerResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.util.Optional;
 
@@ -15,12 +15,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class SellerServiceTest {
 
-    private SellerRepository sellerRepository = Mockito.mock(SellerRepository.class);
+    private SellerRepository sellerRepository = mock(SellerRepository.class);
     private SellerService sellerService;
 
     @BeforeEach
@@ -36,7 +35,6 @@ class SellerServiceTest {
                 "1234567890", "홍길동", "admin1234", "test@test.com"
         );
 
-        //any() : 어떤 Seller 객체든 상관X
         when(sellerRepository.save(any(Seller.class)))
                 .then(returnsFirstArg());
 
@@ -48,7 +46,6 @@ class SellerServiceTest {
         assertEquals("홍길동", result.name());
         assertEquals("test@test.com", result.email());
 
-        //verify(): 테스트 대상 코드가 특정 메서드를 실제로 호출했는지 확인하는 데 사용
         verify(sellerRepository).save(any());
     }
 
@@ -78,10 +75,12 @@ class SellerServiceTest {
     void findSellerByBusinessNumber_success() {
         //given
         String businessNumber = "1234567890";
-        Seller seller = Seller.create(businessNumber, "홍길동", "abc12345", "test@test.com");
+        SellerProjection projection = mock(SellerProjection.class);
+        when(projection.getName()).thenReturn("홍길동");
+        when(projection.getEmail()).thenReturn("test@test.com");
 
         when(sellerRepository.findByBusinessNumber(businessNumber))
-                .thenReturn(Optional.of(seller));
+                .thenReturn(Optional.of(projection));
 
         //when
         SellerResponse result = sellerService.findSellerByBusinessNumber(businessNumber);

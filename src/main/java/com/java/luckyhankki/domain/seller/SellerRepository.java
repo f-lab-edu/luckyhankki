@@ -9,5 +9,5 @@ public interface SellerRepository extends JpaRepository<Seller, Long> {
     boolean existsByBusinessNumber(String businessNumber);
 
     //사업자등록번호로 판매자 조회
-    Optional<Seller> findByBusinessNumber(String businessNumber);
+    Optional<SellerProjection> findByBusinessNumber(String businessNumber);
 }

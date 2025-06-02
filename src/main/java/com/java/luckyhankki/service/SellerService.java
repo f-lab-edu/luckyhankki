@@ -1,6 +1,7 @@
 package com.java.luckyhankki.service;
 
 import com.java.luckyhankki.domain.seller.Seller;
+import com.java.luckyhankki.domain.seller.SellerProjection;
 import com.java.luckyhankki.domain.seller.SellerRepository;
 import com.java.luckyhankki.dto.SellerRequest;
 import com.java.luckyhankki.dto.SellerResponse;
@@ -48,9 +49,9 @@ public class SellerService {
      */
     @Transactional(readOnly = true)
     public SellerResponse findSellerByBusinessNumber(String businessNumber) {
-        Seller seller = repository.findByBusinessNumber(businessNumber)
+        SellerProjection seller = repository.findByBusinessNumber(businessNumber)
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 판매자입니다."));
 
-        return new SellerResponse(seller.getBusinessNumber(), seller.getName(), seller.getEmail());
+        return new SellerResponse(businessNumber, seller.getName(), seller.getEmail());
     }
 }
