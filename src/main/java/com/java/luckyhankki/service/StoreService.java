@@ -43,6 +43,7 @@ public class StoreService {
         Store savedStore = storeRepository.save(store);
 
         return new StoreResponse(
+                savedStore.getId(),
                 savedStore.getName(),
                 savedStore.getPhone(),
                 savedStore.getAddress(),
@@ -56,6 +57,7 @@ public class StoreService {
                 .orElseThrow(() -> new RuntimeException("아직 가게가 등록되지 않았습니다."));
 
         return new StoreResponse(
+                store.getId(),
                 store.getName(),
                 store.getPhone(),
                 store.getAddress(),

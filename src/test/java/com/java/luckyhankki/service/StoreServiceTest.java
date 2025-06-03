@@ -37,15 +37,8 @@ class StoreServiceTest {
     void registerStore_success() {
         //given
         Long sellerId = 1L;
-        Seller seller = Seller.create("1234567890", "홍길동", "password123", "test@example.com");
-
-        StoreRequest storeRequest = new StoreRequest(
-                "가게명1",
-                "02-1234-5678",
-                "서울특별시 종로구 청와대로 1",
-                BigDecimal.valueOf(126.978414),
-                BigDecimal.valueOf(37.566680)
-        );
+        Seller seller = getSeller();
+        StoreRequest storeRequest = getStoreRequest();
 
         when(sellerRepository.findById(sellerId))
                 .thenReturn(Optional.of(seller));
@@ -66,15 +59,8 @@ class StoreServiceTest {
     @DisplayName("이미 등록된 가게가 있을 경우 가게 등록 실패")
     void registerStore_throwsException_whenStoreAlreadyExists() {
         Long sellerId = 1L;
-        StoreRequest storeRequest = new StoreRequest(
-                "가게명1",
-                "02-1234-5678",
-                "서울특별시 종로구 청와대로 1",
-                BigDecimal.valueOf(126.978414),
-                BigDecimal.valueOf(37.566680)
-        );
-
-        Seller seller = Seller.create("1234567890", "홍길동", "password123", "test@example.com");
+        StoreRequest storeRequest = getStoreRequest();
+        Seller seller = getSeller();
 
         when(sellerRepository.findById(sellerId))
                 .thenReturn(Optional.of(seller));
@@ -86,5 +72,19 @@ class StoreServiceTest {
                 () -> storeService.registerStore(sellerId, storeRequest));
 
         assertEquals("이미 등록된 가게가 있습니다.", exception.getMessage());
+    }
+
+    private static StoreRequest getStoreRequest() {
+        return new StoreRequest(
+                "가게명1",
+                "02-1234-5678",
+                "서울특별시 종로구 청와대로 1",
+                BigDecimal.valueOf(126.978414),
+                BigDecimal.valueOf(37.566680)
+        );
+    }
+
+    private static Seller getSeller() {
+        return Seller.create("1234567890", "홍길동", "password123", "test@example.com");
     }
 }

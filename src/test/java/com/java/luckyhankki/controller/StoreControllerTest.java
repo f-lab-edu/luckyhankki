@@ -44,6 +44,7 @@ class StoreControllerTest {
         );
 
         StoreResponse storeResponse = new StoreResponse(
+                1L,
                 "가게명1",
                 "02-1234-5678",
                 "서울특별시 종로구 청와대로 1",
@@ -58,6 +59,7 @@ class StoreControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(storeRequest)))
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.name").value("가게명1"))
                 .andExpect(jsonPath("$.phone").value("02-1234-5678"))
                 .andExpect(jsonPath("$.address").value("서울특별시 종로구 청와대로 1"))
@@ -69,6 +71,7 @@ class StoreControllerTest {
     @DisplayName("판매자ID에 해당하는 가게 정보 조회 웹 테스트")
     void getStore() throws Exception {
         StoreResponse storeResponse = new StoreResponse(
+                1L,
                 "가게명1",
                 "02-1234-5678",
                 "서울특별시 종로구 청와대로 1",
@@ -81,6 +84,7 @@ class StoreControllerTest {
 
         mockMvc.perform(get("/stores/{sellerId}", 1))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.name").value("가게명1"))
                 .andExpect(jsonPath("$.phone").value("02-1234-5678"))
                 .andExpect(jsonPath("$.address").value("서울특별시 종로구 청와대로 1"))
