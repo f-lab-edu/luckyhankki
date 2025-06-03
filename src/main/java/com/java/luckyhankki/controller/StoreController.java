@@ -2,6 +2,7 @@ package com.java.luckyhankki.controller;
 
 import com.java.luckyhankki.dto.StoreRequest;
 import com.java.luckyhankki.dto.StoreResponse;
+import com.java.luckyhankki.dto.StoreUpdateRequest;
 import com.java.luckyhankki.service.StoreService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -33,5 +34,19 @@ public class StoreController {
         StoreResponse storeResponse = storeService.findStore(sellerId);
 
         return ResponseEntity.status(HttpStatus.OK).body(storeResponse);
+    }
+
+    @PutMapping("/{storeId}")
+    public ResponseEntity<Void> updateStore(@PathVariable Long storeId, @RequestBody StoreUpdateRequest request) {
+        storeService.updateStore(storeId, request);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{storeId}")
+    public ResponseEntity<Void> deleteStore(@PathVariable Long storeId) {
+        storeService.deleteStore(storeId);
+
+        return ResponseEntity.noContent().build();
     }
 }

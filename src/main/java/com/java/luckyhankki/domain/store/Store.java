@@ -3,11 +3,13 @@ package com.java.luckyhankki.domain.store;
 import com.java.luckyhankki.domain.seller.Seller;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@SQLDelete(sql = "UPDATE store SET is_deleted = 1 WHERE store_id = ?")
 @Entity
 public class Store {
 
@@ -43,6 +45,9 @@ public class Store {
     @Column(nullable = false)
     private int reportCount;
 
+    @Column(nullable = false)
+    private boolean isDeleted;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;
@@ -63,6 +68,7 @@ public class Store {
         store.latitude = latitude;
         store.isApproved = false;
         store.reportCount = 0;
+        store.isDeleted = false;
         return store;
     }
 
@@ -106,12 +112,38 @@ public class Store {
         return reportCount;
     }
 
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public void updateStore(String name, String phone, String address, BigDecimal longitude, BigDecimal latitude) {
+        if (name != null) {
+            this.name = name;
+        }
+        if (phone != null) {
+            this.phone = phone;
+        }
+        if (address != null) {
+            this.address = address;
+        }
+        if (longitude != null) {
+            this.longitude = longitude;
+        }
+        if (latitude != null) {
+            this.latitude = latitude;
+        }
+    }
+
+    public void deleteStore() {
+        this.isDeleted = true;
     }
 
 }

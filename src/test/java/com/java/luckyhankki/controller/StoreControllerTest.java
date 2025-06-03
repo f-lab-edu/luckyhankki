@@ -3,6 +3,7 @@ package com.java.luckyhankki.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.java.luckyhankki.dto.StoreRequest;
 import com.java.luckyhankki.dto.StoreResponse;
+import com.java.luckyhankki.dto.StoreUpdateRequest;
 import com.java.luckyhankki.service.StoreService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,8 +17,7 @@ import java.math.BigDecimal;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -90,5 +90,29 @@ class StoreControllerTest {
                 .andExpect(jsonPath("$.address").value("서울특별시 종로구 청와대로 1"))
                 .andExpect(jsonPath("$.isApproved").value(false))
                 .andExpect(jsonPath("$.reportCount").value(0));
+    }
+
+    @Test
+    @DisplayName("가게 정보 업데이트 웹 테스트")
+    void updateStore() throws Exception {
+        StoreUpdateRequest storeUpdateRequest = new StoreUpdateRequest(
+                "가게명2",
+                "031-1234-5678",
+                "경기도 수원시",
+                null,
+                null
+        );
+
+        mockMvc.perform(put("/stores/{storeId}", 1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(storeUpdateRequest)))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @DisplayName("가게 삭제 웹 테스트")
+    void deleteStore() throws Exception {
+        mockMvc.perform(delete("/stores/{storeId}", 1))
+                .andExpect(status().isNoContent());
     }
 }

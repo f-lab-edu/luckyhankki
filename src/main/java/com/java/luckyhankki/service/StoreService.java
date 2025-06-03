@@ -7,6 +7,7 @@ import com.java.luckyhankki.domain.store.StoreProjection;
 import com.java.luckyhankki.domain.store.StoreRepository;
 import com.java.luckyhankki.dto.StoreRequest;
 import com.java.luckyhankki.dto.StoreResponse;
+import com.java.luckyhankki.dto.StoreUpdateRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,4 +65,22 @@ public class StoreService {
                 store.getIsApproved(),
                 store.getReportCount());
     }
+
+    public void updateStore(Long storeId, StoreUpdateRequest request) {
+        //TODO isApproved 상태가 true일 경우에만 수정
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new IllegalArgumentException("Store not found: " + storeId));
+
+        store.updateStore(request.name(), request.phone(), request.address(), request.longitude(), request.latitude());
+    }
+
+    public void deleteStore(Long storeId) {
+        //TODO isApproved 상태가 true일 경우에만 삭제
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new IllegalArgumentException("Store not found: " + storeId));
+
+        store.deleteStore();
+        storeRepository.deleteById(storeId);
+    }
+
 }

@@ -22,8 +22,29 @@ class StoreTest {
     @Test
     @DisplayName("가게 등록 성공")
     void save() {
+        Store store = getStore();
+        Store savedStore = storeRepository.save(store);
+
+        Optional<Store> optionalStore = storeRepository.findById(savedStore.getId());
+
+        assertThat(optionalStore).isPresent();
+    }
+    
+    @Test
+    @DisplayName("soft delete한 후 가게 미조회")
+    void softDelete_thenNotFound() {
+        Store store = getStore();
+        Store savedStore = storeRepository.save(store);
+
+        storeRepository.deleteById(savedStore.getId());
+
+        Optional<Store> result = storeRepository.findByIdAndIsDeletedFalse(savedStore.getId());
+        assertThat(result).isNotPresent();
+    }
+
+    private static Store getStore() {
         Seller seller = Seller.create("1234567890", "판매자1", "password123", "seller@test.com");
-        Store store = Store.create(
+        return Store.create(
                 seller,
                 "가게명1",
                 "02-1234-5678",
@@ -31,10 +52,5 @@ class StoreTest {
                 BigDecimal.valueOf(126.978414),
                 BigDecimal.valueOf(37.566680)
         );
-
-        Store savedStore = storeRepository.save(store);
-        Optional<Store> optionalStore = storeRepository.findById(savedStore.getId());
-
-        assertThat(optionalStore).isPresent();
     }
 }
