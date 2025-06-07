@@ -5,6 +5,7 @@ import com.java.luckyhankki.domain.category.CategoryRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
@@ -41,12 +42,12 @@ class CategoryServiceTest {
     void registerCategory_throwsException_whenCategoryNameExists() {
         Category category = new Category("음식");
 
-        when(repository.existsByName("음식")).thenReturn(true);
+        when(repository.save(any(Category.class))).thenThrow(DataIntegrityViolationException.class);
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> service.registerCategory(category));
 
-        assertEquals("이미 존재하는 카테고리 입니다.", exception.getMessage());
-        verify(repository).existsByName(any());
+        assertEquals("이미 존재하는 카테고리명입니다.", exception.getMessage());
+        verify(repository).save(any());
     }
 
     @Test

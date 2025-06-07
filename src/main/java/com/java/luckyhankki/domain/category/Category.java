@@ -13,7 +13,7 @@ public class Category {
     @Column(name = "category_id")
     private Long id;
 
-    @Column(length = 10, nullable = false)
+    @Column(length = 10, nullable = false, unique = true)
     private String name;
 
     protected Category() {}
@@ -30,7 +30,10 @@ public class Category {
         return name;
     }
 
-    public void setName(String name) {
+    public void changeName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("카테고리명은 비어 있을 수 없습니다.");
+        }
         this.name = name;
     }
 }

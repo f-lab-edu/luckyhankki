@@ -2,6 +2,7 @@ package com.java.luckyhankki.service;
 
 import com.java.luckyhankki.domain.category.Category;
 import com.java.luckyhankki.domain.category.CategoryRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,11 +19,11 @@ public class CategoryService {
     }
 
     public Category registerCategory(Category category) {
-        if (repository.existsByName(category.getName())) {
-            throw new RuntimeException("이미 존재하는 카테고리 입니다.");
+        try {
+            return repository.save(category);
+        } catch (DataIntegrityViolationException e) {
+            throw new RuntimeException("이미 존재하는 카테고리명입니다.");
         }
-
-        return repository.save(category);
     }
 
     @Transactional(readOnly = true)
@@ -39,6 +40,6 @@ public class CategoryService {
     public void updateCategoryName(long id, String newName) {
         Category result = repository.findById(id)
                                     .orElseThrow(() -> new IllegalArgumentException("Category not found: " + id));
-        result.setName(newName);
+        result.changeName(newName);
     }
 }

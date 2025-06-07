@@ -30,7 +30,7 @@ class CategoryTest {
     void updateCategoryName() {
         Category category = repository.save(new Category("음식"));
 
-        category.setName("베이커리");
+        category.changeName("베이커리");
         repository.save(category);
 
         Category updatedCategory = repository.findById(category.getId()).orElseThrow();
