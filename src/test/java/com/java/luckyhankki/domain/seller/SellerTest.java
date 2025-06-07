@@ -21,7 +21,7 @@ class SellerTest {
     @DisplayName("가입 성공하고 조회하면 동일한 사업자번호를 가진 판매자가 조회된다.")
     void should_find_seller_by_business_number_after_join() {
         //given
-        Seller seller = Seller.create("1234567890", "판매자1", "password123", "seller@test.com");
+        Seller seller = new Seller("1234567890", "판매자1", "password123", "seller@test.com");
 
         //when
         Seller savedSeller = repository.save(seller);

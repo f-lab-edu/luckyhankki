@@ -22,8 +22,8 @@ class StoreTest {
     @Test
     @DisplayName("가게 등록 성공")
     void save() {
-        Seller seller = Seller.create("1234567890", "판매자1", "password123", "seller@test.com");
-        Store store = Store.create(
+        Seller seller = new Seller("1234567890", "판매자1", "password123", "seller@test.com");
+        Store store = new Store(
                 seller,
                 "가게명1",
                 "02-1234-5678",

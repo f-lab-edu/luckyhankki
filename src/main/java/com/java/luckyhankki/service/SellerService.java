@@ -26,12 +26,7 @@ public class SellerService {
             throw new RuntimeException("이미 존재하는 사업자등록번호입니다.");
         }
 
-        Seller seller = Seller.create(
-                request.businessNumber(),
-                request.name(),
-                request.password(),
-                request.email()
-        );
+        Seller seller = new Seller(request.businessNumber(), request.name(), request.password(), request.email());
 
         Seller savedSeller = repository.save(seller);
 

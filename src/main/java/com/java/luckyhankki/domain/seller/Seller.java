@@ -40,14 +40,12 @@ public class Seller {
 
     protected Seller() {}
 
-    public static Seller create(String businessNumber, String name, String password, String email) {
-        Seller seller = new Seller();
-        seller.businessNumber = businessNumber;
-        seller.name = name;
-        seller.password = password;
-        seller.email = email;
-        seller.loginFail = 0;
-        return seller;
+    public Seller(String businessNumber, String name, String password, String email) {
+        this.businessNumber = businessNumber;
+        this.name = name;
+        this.password = password;
+        this.email = email;
+        this.loginFail = 0;
     }
 
     public Long getId() {

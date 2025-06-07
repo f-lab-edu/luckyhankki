@@ -85,6 +85,6 @@ class StoreServiceTest {
     }
 
     private static Seller getSeller() {
-        return Seller.create("1234567890", "홍길동", "password123", "test@example.com");
+        return new Seller("1234567890", "홍길동", "password123", "test@example.com");
     }
 }
