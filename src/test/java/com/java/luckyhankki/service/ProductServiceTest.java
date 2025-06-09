@@ -6,6 +6,7 @@ import com.java.luckyhankki.domain.product.Product;
 import com.java.luckyhankki.domain.product.ProductRepository;
 import com.java.luckyhankki.domain.store.Store;
 import com.java.luckyhankki.domain.store.StoreRepository;
+import com.java.luckyhankki.dto.ProductDetailResponse;
 import com.java.luckyhankki.dto.ProductRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -101,6 +102,27 @@ class ProductServiceTest {
     }
 
     @Test
+    @DisplayName("픽업 시작 시간이 픽업 종료 시간보다 늦을 경우 예외 발생")
+    void addProduct_throwsException_whenPickupStartDateIsLaterThanPickupEndDate() {
+        // given
+        long storeId = 1L;
+        long categoryId = 1L;
+
+        ProductRequest request = new ProductRequest(
+                categoryId,
+                "비빔밥",
+                10000,
+                8000,
+                1,
+                "픽업 시작 시간이 픽업 종료 시간보다 늦습니다.",
+                LocalDateTime.now().plusHours(6),
+                LocalDateTime.now().plusHours(2)
+        );
+
+        assertThrows(RuntimeException.class, () -> service.addProduct(storeId, request));
+    }
+
+    @Test
     @DisplayName("미승인된 상태에서 상품 등록할 경우 예외 발생")
     void addProduct_throwsException_whenStoreIsNotApproved() {
         // given
@@ -181,5 +203,42 @@ class ProductServiceTest {
         assertThat(result.get(0).getName()).isEqualTo("김밥");
 
         verify(productRepository).findAllByStoreIdAndIsActiveTrue(storeId);
+    }
+
+    @Test
+    @DisplayName("상품 상세 조회 성공")
+    void getProduct_success() {
+        long productId = 1L;
+
+        //Store mock
+        Store store = mock(Store.class);
+        when(store.getName()).thenReturn("가게명1");
+
+        //Category mock
+        Category category = mock(Category.class);
+        when(category.getName()).thenReturn("음식");
+
+        Product product = new Product(
+                store,
+                category,
+                "비빔밥",
+                10000,
+                8000,
+                1,
+                "육회비빔밥 입니다.",
+                LocalDateTime.now().plusHours(1),
+                LocalDateTime.now().plusHours(2)
+        );
+
+        when(productRepository.findById(productId))
+                .thenReturn(Optional.of(product));
+
+        ProductDetailResponse response = service.getProduct(productId);
+
+        assertThat(response.storeName()).isEqualTo(store.getName());
+        assertThat(response.categoryName()).isEqualTo(category.getName());
+        assertThat(response.productName()).isEqualTo(product.getName());
+
+        verify(productRepository).findById(productId);
     }
 }

@@ -2,6 +2,7 @@ package com.java.luckyhankki.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.java.luckyhankki.domain.product.Product;
+import com.java.luckyhankki.dto.ProductDetailResponse;
 import com.java.luckyhankki.dto.ProductRequest;
 import com.java.luckyhankki.service.ProductService;
 import org.junit.jupiter.api.DisplayName;
@@ -100,17 +101,41 @@ class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("상품 id에 해당하는 상품 조회")
-    void getProduct() throws Exception {
-        Long productId = 1L;
-        Product product = new Product(
-                null,
-                null,
+    @DisplayName("픽업 날짜 유효성 검사 테스트")
+    void addProduct_withInvalidPickupDate_throwsException() throws Exception {
+        long storeId = 1L;
+        ProductRequest invalidRequest = new ProductRequest(
+                1L,
                 "비빔밥",
                 10000,
                 8000,
                 1,
-                "육회비빔밥입니다.",
+                "픽업 날짜는 오늘 또는 내일만 가능합니다.",
+                LocalDateTime.now().plusDays(1),
+                LocalDateTime.now().plusDays(5)
+        );
+
+        mockMvc.perform(post("/products")
+                        .param("storeId", Long.toString(storeId))
+                        .content(objectMapper.writeValueAsString(invalidRequest))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("상품 id에 해당하는 상품 조회")
+    void getProduct() throws Exception {
+        Long productId = 1L;
+        ProductDetailResponse product = new ProductDetailResponse(
+                "가게명1",
+                "경기도 수원시",
+                "031-1234-5678",
+                "음식",
+                "육회비빔밥",
+                "한우육회비빔밥 입니다.",
+                1,
+                10000,
+                8000,
                 LocalDateTime.now().plusHours(1),
                 LocalDateTime.now().plusHours(6)
         );
@@ -119,7 +144,9 @@ class ProductControllerTest {
 
         mockMvc.perform(get("/products/{productId}", productId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value(product.getName()))
+                .andExpect(jsonPath("$.storeName").value(product.storeName()))
+                .andExpect(jsonPath("$.categoryName").value(product.categoryName()))
+                .andExpect(jsonPath("$.description").value(product.description()))
                 .andDo(print());
 
         verify(productService).getProduct(productId);

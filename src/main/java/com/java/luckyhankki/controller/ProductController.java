@@ -1,6 +1,7 @@
 package com.java.luckyhankki.controller;
 
 import com.java.luckyhankki.domain.product.Product;
+import com.java.luckyhankki.dto.ProductDetailResponse;
 import com.java.luckyhankki.dto.ProductRequest;
 import com.java.luckyhankki.service.ProductService;
 import jakarta.validation.Valid;
@@ -28,8 +29,8 @@ public class ProductController {
     }
 
     @GetMapping("/{productId}")
-    public ResponseEntity<Product> getProduct(@PathVariable Long productId) {
-        Product product = service.getProduct(productId);
+    public ResponseEntity<ProductDetailResponse> getProduct(@PathVariable Long productId) {
+        ProductDetailResponse product = service.getProduct(productId);
 
         return ResponseEntity.status(HttpStatus.OK).body(product);
     }

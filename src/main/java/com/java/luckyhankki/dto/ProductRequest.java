@@ -1,6 +1,7 @@
 package com.java.luckyhankki.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.java.luckyhankki.config.annotation.PickupDate;
 import com.java.luckyhankki.config.annotation.WonUnit;
 import jakarta.validation.constraints.*;
 
@@ -32,11 +33,13 @@ public record ProductRequest(
         @NotNull
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
         @FutureOrPresent(message = "픽업 시작 시간은 현재 시각 이후여야 합니다.")
+        @PickupDate
         LocalDateTime pickupStartDateTime,
 
         @NotNull
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
         @FutureOrPresent(message = "픽업 종료 시간은 현재 시각 이후여야 합니다.")
+        @PickupDate
         LocalDateTime pickupEndDateTime
 ) {
 }

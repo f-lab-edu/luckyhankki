@@ -6,10 +6,12 @@ import com.java.luckyhankki.domain.product.Product;
 import com.java.luckyhankki.domain.product.ProductRepository;
 import com.java.luckyhankki.domain.store.Store;
 import com.java.luckyhankki.domain.store.StoreRepository;
+import com.java.luckyhankki.dto.ProductDetailResponse;
 import com.java.luckyhankki.dto.ProductRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -31,6 +33,13 @@ public class ProductService {
             throw new RuntimeException("할인된 가격은 원가보다 클 수 없습니다.");
         }
 
+        LocalDateTime pickupStartDateTime = request.pickupStartDateTime();
+        LocalDateTime pickupEndDateTime = request.pickupEndDateTime();
+
+        if (pickupStartDateTime.isAfter(pickupEndDateTime)) {
+            throw new RuntimeException("픽업 시작 시간은 픽업 종료 시간보다 늦을 수 없습니다.");
+        }
+
         //가게 승인이 된 상태여야 상품 등록 가능
         Store store = storeRepository.findByIdAndIsApprovedTrue(storeId)
                 .orElseThrow(() -> new RuntimeException("아직 승인되지 않은 가게입니다. 관리자 승인 후 상품 등록이 가능합니다."));
@@ -46,8 +55,9 @@ public class ProductService {
                 request.priceDiscount(),
                 request.stock(),
                 request.description(),
-                request.pickupStartDateTime(),
-                request.pickupEndDateTime());
+                pickupStartDateTime,
+                pickupEndDateTime
+        );
 
         return productRepository.save(product);
     }
@@ -64,8 +74,22 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Product getProduct(Long productId) {
-        return productRepository.findById(productId)
+    public ProductDetailResponse getProduct(Long productId) {
+        Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("해당 상품이 존재하지 않습니다."));
+
+        return new ProductDetailResponse(
+                product.getStore().getName(),
+                product.getStore().getAddress(),
+                product.getStore().getPhone(),
+                product.getCategory().getName(),
+                product.getName(),
+                product.getDescription(),
+                product.getStock(),
+                product.getPriceOriginal(),
+                product.getPriceDiscount(),
+                product.getPickupStartDateTime(),
+                product.getPickupEndDateTime()
+        );
     }
 }
