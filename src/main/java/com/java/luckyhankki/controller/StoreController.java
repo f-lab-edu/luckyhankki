@@ -1,21 +1,27 @@
 package com.java.luckyhankki.controller;
 
+import com.java.luckyhankki.domain.product.Product;
 import com.java.luckyhankki.dto.StoreRequest;
 import com.java.luckyhankki.dto.StoreResponse;
+import com.java.luckyhankki.service.ProductService;
 import com.java.luckyhankki.service.StoreService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/stores")
 public class StoreController {
 
     private final StoreService storeService;
+    private final ProductService productService;
 
-    public StoreController(StoreService storeService) {
+    public StoreController(StoreService storeService, ProductService productService) {
         this.storeService = storeService;
+        this.productService = productService;
     }
 
     @PostMapping
@@ -33,5 +39,15 @@ public class StoreController {
         StoreResponse storeResponse = storeService.findStore(sellerId);
 
         return ResponseEntity.status(HttpStatus.OK).body(storeResponse);
+    }
+
+    @GetMapping("/{storeId}/products")
+    public ResponseEntity<List<Product>> getProducts(
+            @PathVariable Long storeId,
+            @RequestParam(required = false) Boolean active) {
+
+        List<Product> products = productService.getAllProducts(storeId, active);
+
+        return ResponseEntity.status(HttpStatus.OK).body(products);
     }
 }
