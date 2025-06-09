@@ -31,14 +31,13 @@ public class StoreService {
             throw new RuntimeException("이미 등록된 가게가 있습니다.");
         }
 
-        Store store = Store.create(
+        Store store = new Store(
                 seller,
                 request.name(),
                 request.phone(),
                 request.address(),
                 request.longitude(),
-                request.latitude()
-        );
+                request.latitude());
 
         Store savedStore = storeRepository.save(store);
 
