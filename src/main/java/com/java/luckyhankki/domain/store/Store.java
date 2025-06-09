@@ -53,17 +53,15 @@ public class Store {
 
     protected Store() {}
 
-    public static Store create(Seller seller, String name, String phone, String address, BigDecimal longitude, BigDecimal latitude) {
-        Store store = new Store();
-        store.setSeller(seller);
-        store.name = name;
-        store.phone = phone;
-        store.address = address;
-        store.longitude = longitude;
-        store.latitude = latitude;
-        store.isApproved = false;
-        store.reportCount = 0;
-        return store;
+    public Store(Seller seller, String name, String phone, String address, BigDecimal longitude, BigDecimal latitude) {
+        this.seller = seller;
+        this.name = name;
+        this.phone = phone;
+        this.address = address;
+        this.longitude = longitude;
+        this.latitude = latitude;
+        this.isApproved = false;
+        this.reportCount = 0;
     }
 
     public Long getId() {
