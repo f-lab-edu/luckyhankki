@@ -3,6 +3,7 @@ package com.java.luckyhankki.domain.product;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.java.luckyhankki.domain.category.Category;
 import com.java.luckyhankki.domain.store.Store;
+import com.java.luckyhankki.dto.ProductUpdateRequest;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -72,28 +73,56 @@ public class Product {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public int getPriceOriginal() {
         return priceOriginal;
+    }
+
+    public void setPriceOriginal(int priceOriginal) {
+        this.priceOriginal = priceOriginal;
     }
 
     public int getPriceDiscount() {
         return priceDiscount;
     }
 
+    public void setPriceDiscount(int priceDiscount) {
+        this.priceDiscount = priceDiscount;
+    }
+
     public int getStock() {
         return stock;
+    }
+
+    public void setStock(int stock) {
+        this.stock = stock;
     }
 
     public String getDescription() {
         return description;
     }
 
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public LocalDateTime getPickupStartDateTime() {
         return pickupStartDateTime;
     }
 
+    public void setPickupStartDateTime(LocalDateTime pickupStartDateTime) {
+        this.pickupStartDateTime = pickupStartDateTime;
+    }
+
     public LocalDateTime getPickupEndDateTime() {
         return pickupEndDateTime;
+    }
+
+    public void setPickupEndDateTime(LocalDateTime pickupEndDateTime) {
+        this.pickupEndDateTime = pickupEndDateTime;
     }
 
     public boolean isActive() {
@@ -105,5 +134,25 @@ public class Product {
      */
     public void deactivate() {
         this.isActive = false;
+    }
+
+    /**
+     * 카테고리 변경
+     *
+     * @param category ProductUpdateRequest으로 들어온 새 카테고리
+     */
+    public void changeCategory(Category category) {
+        if (!this.category.equals(category)) {
+            this.category = category;
+        }
+    }
+
+    /**
+     * Product 업데이트 처리
+     *
+     * @param request ProductUpdateRequest
+     */
+    public void updateProduct(ProductUpdateRequest request) {
+        request.updateIfPresent(this);
     }
 }

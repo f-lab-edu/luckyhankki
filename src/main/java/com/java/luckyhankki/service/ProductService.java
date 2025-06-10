@@ -9,6 +9,7 @@ import com.java.luckyhankki.domain.store.StoreRepository;
 import com.java.luckyhankki.dto.ProductDetailResponse;
 import com.java.luckyhankki.dto.ProductRequest;
 import com.java.luckyhankki.dto.ProductResponse;
+import com.java.luckyhankki.dto.ProductUpdateRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -128,5 +129,24 @@ public class ProductService {
                 product.pickupStartDateTime(),
                 product.pickupEndDateTime()
         ));
+    }
+
+    public void updateProduct(Long productId, ProductUpdateRequest request) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("해당 상품이 존재하지 않습니다."));
+
+        if (request.categoryId() != null) {
+            Category category = categoryRepository.findById(request.categoryId())
+                    .orElseThrow(() -> new RuntimeException("존재하지 않는 카테고리입니다."));
+            product.changeCategory(category);
+        }
+
+        product.updateProduct(request);
+    }
+
+    public void deleteProduct(Long productId) {
+        //if 예약건이 없는 경우
+        productRepository.deleteById(productId);
+        //else 예외 던지기
     }
 }
