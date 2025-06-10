@@ -8,6 +8,7 @@ import com.java.luckyhankki.domain.store.Store;
 import com.java.luckyhankki.domain.store.StoreRepository;
 import com.java.luckyhankki.dto.ProductDetailResponse;
 import com.java.luckyhankki.dto.ProductRequest;
+import com.java.luckyhankki.dto.ProductResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -69,13 +70,11 @@ class ProductServiceTest {
         when(productRepository.save(any(Product.class)))
                 .then(returnsFirstArg());
 
-        Product product = service.addProduct(storeId, request);
+        ProductResponse product = service.addProduct(storeId, request);
 
-        assertEquals("비빔밥", product.getName());
-        assertEquals(10000, product.getPriceOriginal());
-        assertEquals(request.pickupStartDateTime(), product.getPickupStartDateTime());
-        assertSame(store, product.getStore());
-        assertSame(category, product.getCategory());
+        assertEquals("비빔밥", product.name());
+        assertEquals(10000, product.priceOriginal());
+        assertEquals(request.pickupStartDateTime(), product.pickupStartDateTime());
 
         verify(productRepository).save(any(Product.class));
     }
@@ -148,59 +147,32 @@ class ProductServiceTest {
 
     @Test
     @DisplayName("가게에 등록된 모든 상품 목록 조회")
-    void getAllProducts_whenActiveIsNull() {
+    void getAllProducts_ByStore_whenActiveIsNull() {
         long storeId = 1L;
-
-        List<Product> products = List.of(
-            new Product(null, null, "비빔밥", 10000, 8000, 3, "육회비빔밥입니다.",
-                    LocalDateTime.now().plusHours(1),
-                    LocalDateTime.now().plusHours(2)),
-            new Product(null, null, "김밥", 5000, 4500, 5, "참치김밥입니다.",
-                    LocalDateTime.now().plusHours(1),
-                    LocalDateTime.now().plusHours(2))
-        );
-
-        products.get(0).deactivate();
+        List<ProductResponse> responseList = getProductResponses(false);
 
         when(productRepository.findAllByStoreId(storeId))
-                .thenReturn(products);
+                .thenReturn(responseList);
 
-        List<Product> result = service.getAllProducts(storeId, null);
+        List<ProductResponse> result = service.getAllProductsByStore(storeId, null);
 
         assertEquals(2, result.size());
-        assertThat(result.get(0).getName()).isEqualTo("비빔밥");
-        assertThat(result.get(1).getName()).isEqualTo("김밥");
 
         verify(productRepository).findAllByStoreId(storeId);
     }
 
     @Test
     @DisplayName("가게에 등록된 활성화된 상품만 목록 조회")
-    void getAllProducts_whenActiveIsTrue() {
+    void getAllProducts_ByStore_whenActiveIsTrue() {
         long storeId = 1L;
-
-        List<Product> products = List.of(
-            new Product(null, null, "비빔밥", 10000, 8000, 3, "육회비빔밥입니다.",
-                    LocalDateTime.now().plusHours(1),
-                    LocalDateTime.now().plusHours(2)),
-            new Product(null, null, "김밥", 5000, 4500, 5, "참치김밥입니다.",
-                    LocalDateTime.now().plusHours(1),
-                    LocalDateTime.now().plusHours(2))
-        );
-
-        products.get(0).deactivate();
-
-        List<Product> activeProducts = products.stream()
-                .filter(Product::isActive)
-                .toList();
+        List<ProductResponse> responseList = getProductResponses(true);
 
         when(productRepository.findAllByStoreIdAndIsActiveTrue(storeId))
-                .thenReturn(activeProducts);
+                .thenReturn(responseList);
 
-        List<Product> result = service.getAllProducts(storeId, true);
+        List<ProductResponse> result = service.getAllProductsByStore(storeId, true);
 
         assertEquals(1, result.size());
-        assertThat(result.get(0).getName()).isEqualTo("김밥");
 
         verify(productRepository).findAllByStoreIdAndIsActiveTrue(storeId);
     }
@@ -240,5 +212,34 @@ class ProductServiceTest {
         assertThat(response.productName()).isEqualTo(product.getName());
 
         verify(productRepository).findById(productId);
+    }
+
+    private static List<ProductResponse> getProductResponses(boolean isActive) {
+        Store store = mock(Store.class);
+        when(store.getName()).thenReturn("가게1");
+
+        Category category = mock(Category.class);
+        when(category.getName()).thenReturn("음식");
+
+        Product product1 = mock(Product.class);
+        Product product2 = mock(Product.class);
+        lenient().when(product1.isActive()).thenReturn(true);
+        lenient().when(product2.isActive()).thenReturn(false);
+
+        List<Product> products = List.of(product1, product2);
+        List<Product> filterProducts = (isActive ? products.stream().filter(Product::isActive).toList() : products);
+
+        return filterProducts.stream()
+                .map(product -> new ProductResponse(
+                        product.getId(),
+                        store.getName(),
+                        category.getName(),
+                        product.getName(),
+                        product.getPriceOriginal(),
+                        product.getPriceDiscount(),
+                        product.getStock(),
+                        product.getPickupStartDateTime(),
+                        product.getPickupEndDateTime()))
+                .toList();
     }
 }

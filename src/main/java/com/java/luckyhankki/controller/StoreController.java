@@ -1,6 +1,6 @@
 package com.java.luckyhankki.controller;
 
-import com.java.luckyhankki.domain.product.Product;
+import com.java.luckyhankki.dto.ProductResponse;
 import com.java.luckyhankki.dto.StoreRequest;
 import com.java.luckyhankki.dto.StoreResponse;
 import com.java.luckyhankki.service.ProductService;
@@ -42,11 +42,11 @@ public class StoreController {
     }
 
     @GetMapping("/{storeId}/products")
-    public ResponseEntity<List<Product>> getProducts(
+    public ResponseEntity<List<ProductResponse>> getProducts(
             @PathVariable Long storeId,
             @RequestParam(required = false) Boolean active) {
 
-        List<Product> products = productService.getAllProducts(storeId, active);
+        List<ProductResponse> products = productService.getAllProductsByStore(storeId, active);
 
         return ResponseEntity.status(HttpStatus.OK).body(products);
     }

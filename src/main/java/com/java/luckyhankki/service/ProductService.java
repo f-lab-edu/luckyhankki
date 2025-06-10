@@ -8,6 +8,9 @@ import com.java.luckyhankki.domain.store.Store;
 import com.java.luckyhankki.domain.store.StoreRepository;
 import com.java.luckyhankki.dto.ProductDetailResponse;
 import com.java.luckyhankki.dto.ProductRequest;
+import com.java.luckyhankki.dto.ProductResponse;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +31,7 @@ public class ProductService {
         this.categoryRepository = categoryRepository;
     }
 
-    public Product addProduct(Long storeId, ProductRequest request) {
+    public ProductResponse addProduct(Long storeId, ProductRequest request) {
         if (request.priceDiscount() > request.priceOriginal()) {
             throw new RuntimeException("할인된 가격은 원가보다 클 수 없습니다.");
         }
@@ -59,11 +62,26 @@ public class ProductService {
                 pickupEndDateTime
         );
 
-        return productRepository.save(product);
+        Product savedProduct = productRepository.save(product);
+
+        return new ProductResponse(
+                savedProduct.getId(),
+                savedProduct.getStore().getName(),
+                savedProduct.getCategory().getName(),
+                savedProduct.getName(),
+                savedProduct.getPriceOriginal(),
+                savedProduct.getPriceDiscount(),
+                savedProduct.getStock(),
+                savedProduct.getPickupStartDateTime(),
+                savedProduct.getPickupEndDateTime()
+        );
     }
 
+    /**
+     * 판매자가 자신의 가게에 등록된 상품 목록을 조회
+     */
     @Transactional(readOnly = true)
-    public List<Product> getAllProducts(Long storeId, Boolean active) {
+    public List<ProductResponse> getAllProductsByStore(Long storeId, Boolean active) {
         //active가 null이거나 false이면 active 활성화 여부와 상관 없이 모두 조회
         if (active == null || !active) {
             return productRepository.findAllByStoreId(storeId);
@@ -91,5 +109,24 @@ public class ProductService {
                 product.getPickupStartDateTime(),
                 product.getPickupEndDateTime()
         );
+    }
+
+    /**
+     * 고객이 등록된 모든 상품 목록을 조회
+     */
+    @Transactional(readOnly = true)
+    public Slice<ProductResponse> getAllProducts(Pageable pageable) {
+        Slice<ProductResponse> products = productRepository.findAllByIsActiveTrue(pageable);
+        return products.map(product -> new ProductResponse(
+                product.id(),
+                product.storeName(),
+                product.categoryName(),
+                product.name(),
+                product.priceOriginal(),
+                product.priceDiscount(),
+                product.stock(),
+                product.pickupStartDateTime(),
+                product.pickupEndDateTime()
+        ));
     }
 }

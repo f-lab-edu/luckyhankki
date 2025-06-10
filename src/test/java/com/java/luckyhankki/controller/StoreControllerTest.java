@@ -1,7 +1,7 @@
 package com.java.luckyhankki.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.java.luckyhankki.domain.product.Product;
+import com.java.luckyhankki.dto.ProductResponse;
 import com.java.luckyhankki.dto.StoreRequest;
 import com.java.luckyhankki.dto.StoreResponse;
 import com.java.luckyhankki.service.ProductService;
@@ -15,11 +15,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -106,28 +106,19 @@ class StoreControllerTest {
     @DisplayName("가게에 등록된 모든 상품 목록 조회 웹 테스트")
     void getProducts() throws Exception {
         long storeId = 1L;
-        Product product = new Product(
-                null,
-                null,
-                "비빔밥",
-                10000,
-                8000,
-                1,
-                "육회비빔밥입니다.",
-                LocalDateTime.now().plusHours(1),
-                LocalDateTime.now().plusHours(6)
-        );
-        List<Product> products = List.of(product);
+        ProductResponse response1 = mock(ProductResponse.class);
+        ProductResponse response2 = mock(ProductResponse.class);
 
-        given(productService.getAllProducts(storeId, null))
+        List<ProductResponse> products = List.of(response1, response2);
+
+        given(productService.getAllProductsByStore(storeId, null))
                 .willReturn(products);
 
         mockMvc.perform(get("/stores/{storeId}/products", storeId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].name").value("비빔밥"))
-                .andExpect(jsonPath("$[0].isActive").value(true))
+                .andExpect(jsonPath("$.size()").value(2))
                 .andDo(print());
 
-        verify(productService).getAllProducts(storeId, null);
+        verify(productService).getAllProductsByStore(storeId, null);
     }
 }

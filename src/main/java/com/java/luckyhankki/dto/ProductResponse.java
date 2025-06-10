@@ -4,22 +4,19 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDateTime;
 
-public record ProductDetailResponse(
+public record ProductResponse(
+        Long id,
         String storeName,
-        String storeAddress,
-        String storePhone,
         String categoryName,
-        String productName,
-        String description,
-        int stock,
+        String name,
         int priceOriginal,
         int priceDiscount,
+        int stock,
 
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
         LocalDateTime pickupStartDateTime,
 
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
         LocalDateTime pickupEndDateTime
-        //TODO 평점, 별점, 키워드
 ) {
 }

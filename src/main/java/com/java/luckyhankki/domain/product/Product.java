@@ -1,6 +1,5 @@
 package com.java.luckyhankki.domain.product;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.java.luckyhankki.domain.category.Category;
 import com.java.luckyhankki.domain.store.Store;
@@ -34,10 +33,8 @@ public class Product {
 
     private String description;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
     private LocalDateTime pickupStartDateTime;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
     private LocalDateTime pickupEndDateTime;
 
     @JsonProperty("isActive")

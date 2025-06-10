@@ -1,19 +1,24 @@
 package com.java.luckyhankki.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.java.luckyhankki.domain.product.Product;
 import com.java.luckyhankki.dto.ProductDetailResponse;
 import com.java.luckyhankki.dto.ProductRequest;
+import com.java.luckyhankki.dto.ProductResponse;
 import com.java.luckyhankki.service.ProductService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -52,14 +57,14 @@ class ProductControllerTest {
                 LocalDateTime.now().plusHours(6)
         );
 
-        Product product = new Product(
-                null,
-                null,
+        ProductResponse product = new ProductResponse(
+                1L,
+                "가게명1",
+                "음식",
                 productRequest.name(),
                 productRequest.priceOriginal(),
                 productRequest.priceDiscount(),
                 productRequest.stock(),
-                productRequest.description(),
                 productRequest.pickupStartDateTime(),
                 productRequest.pickupEndDateTime()
         );
@@ -72,7 +77,7 @@ class ProductControllerTest {
                         .content(objectMapper.writeValueAsString(productRequest))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.name").value(product.getName()))
+                .andExpect(jsonPath("$.name").value(product.name()))
                 .andDo(print());
 
         verify(productService).addProduct(eq(storeId), any(ProductRequest.class));
@@ -150,5 +155,48 @@ class ProductControllerTest {
                 .andDo(print());
 
         verify(productService).getProduct(productId);
+    }
+
+    @Test
+    @DisplayName("모든 상품 조회 웹 테스트")
+    void getAllProducts() throws Exception {
+        ProductResponse productResponse1 = new ProductResponse(
+                1L,
+                "가게A",
+                "음식",
+                "비빔밥",
+                10000,
+                8000,
+                4,
+                LocalDateTime.now().plusHours(3),
+                LocalDateTime.now().plusHours(6)
+        );
+        ProductResponse productResponse2 = new ProductResponse(
+                2L,
+                "가게B",
+                "베이커리",
+                "랜덤빵박스",
+                25000,
+                20000,
+                2,
+                LocalDateTime.now().plusHours(1),
+                LocalDateTime.now().plusHours(9)
+        );
+
+        List<ProductResponse> content = List.of(productResponse1, productResponse2);
+        Pageable pageable = PageRequest.of(0, 2);
+        Slice<ProductResponse> slice = new SliceImpl<>(content, pageable, true);
+
+        given(productService.getAllProducts(any(Pageable.class))).willReturn(slice);
+
+        mockMvc.perform(get("/products"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].storeName").value(productResponse1.storeName()))
+                .andExpect(jsonPath("$.content[1].name").value(productResponse2.name()))
+                .andExpect(jsonPath("$.first").value(true))
+                .andExpect(jsonPath("$.size").value(2))
+                .andDo(print());
+
+        verify(productService).getAllProducts(any(Pageable.class));
     }
 }

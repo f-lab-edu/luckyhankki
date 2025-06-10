@@ -4,6 +4,7 @@ import com.java.luckyhankki.domain.seller.Seller;
 import com.java.luckyhankki.domain.seller.SellerRepository;
 import com.java.luckyhankki.domain.store.Store;
 import com.java.luckyhankki.domain.store.StoreRepository;
+import com.java.luckyhankki.dto.ProductResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -80,7 +81,7 @@ class ProductTest {
     @Test
     @DisplayName("storeId로 전체 상품 조회")
     void testFindAllByStoreId() {
-        List<Product> products = productRepository.findAllByStoreId(savedStore.getId());
+        List<ProductResponse> products = productRepository.findAllByStoreId(savedStore.getId());
 
         assertThat(products).hasSize(2);
     }
@@ -88,9 +89,8 @@ class ProductTest {
     @Test
     @DisplayName("isActive가 true인 상품만 조회")
     void testFindAllByStoreIdAndIsActiveTrue() {
-        List<Product> products = productRepository.findAllByStoreIdAndIsActiveTrue(savedStore.getId());
+        List<ProductResponse> products = productRepository.findAllByStoreIdAndIsActiveTrue(savedStore.getId());
 
         assertThat(products).hasSize(1);
-        assertThat(products.get(0).isActive()).isTrue();
     }
 }
