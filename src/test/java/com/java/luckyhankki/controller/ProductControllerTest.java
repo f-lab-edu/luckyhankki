@@ -1,0 +1,202 @@
+package com.java.luckyhankki.controller;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.java.luckyhankki.dto.ProductDetailResponse;
+import com.java.luckyhankki.dto.ProductRequest;
+import com.java.luckyhankki.dto.ProductResponse;
+import com.java.luckyhankki.service.ProductService;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest(ProductController.class)
+class ProductControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private ProductService productService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Test
+    @DisplayName("상품 추가 웹 테스트")
+    void addProduct() throws Exception {
+        Long storeId = 1L;
+        ProductRequest productRequest = new ProductRequest(
+                1L,
+                "비빔밥",
+                10000,
+                8000,
+                1,
+                "육회비빔밥입니다.",
+                LocalDateTime.now().plusHours(1),
+                LocalDateTime.now().plusHours(6)
+        );
+
+        ProductResponse product = new ProductResponse(
+                1L,
+                "가게명1",
+                "음식",
+                productRequest.name(),
+                productRequest.priceOriginal(),
+                productRequest.priceDiscount(),
+                productRequest.stock(),
+                productRequest.pickupStartDateTime(),
+                productRequest.pickupEndDateTime()
+        );
+
+        given(productService.addProduct(eq(storeId), any(ProductRequest.class)))
+                .willReturn(product);
+
+        mockMvc.perform(post("/products")
+                        .param("storeId", storeId.toString())
+                        .content(objectMapper.writeValueAsString(productRequest))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value(product.name()))
+                .andDo(print());
+
+        verify(productService).addProduct(eq(storeId), any(ProductRequest.class));
+    }
+
+    @Test
+    @DisplayName("한국 원 단위 유효성 검사 테스트")
+    void addProduct_withInvalidPrice_throwsException() throws Exception {
+        long storeId = 1L;
+        ProductRequest invalidRequest = new ProductRequest(
+                1L,
+                "비빔밥",
+                10009,
+                8000,
+                1,
+                "한국 원화는 최소 10원 단위입니다.",
+                LocalDateTime.now().plusHours(1),
+                LocalDateTime.now().plusHours(6)
+        );
+
+        mockMvc.perform(post("/products")
+                        .param("storeId", Long.toString(storeId))
+                        .content(objectMapper.writeValueAsString(invalidRequest))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("픽업 날짜 유효성 검사 테스트")
+    void addProduct_withInvalidPickupDate_throwsException() throws Exception {
+        long storeId = 1L;
+        ProductRequest invalidRequest = new ProductRequest(
+                1L,
+                "비빔밥",
+                10000,
+                8000,
+                1,
+                "픽업 날짜는 오늘 또는 내일만 가능합니다.",
+                LocalDateTime.now().plusDays(1),
+                LocalDateTime.now().plusDays(5)
+        );
+
+        mockMvc.perform(post("/products")
+                        .param("storeId", Long.toString(storeId))
+                        .content(objectMapper.writeValueAsString(invalidRequest))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("상품 id에 해당하는 상품 조회")
+    void getProduct() throws Exception {
+        Long productId = 1L;
+        ProductDetailResponse product = new ProductDetailResponse(
+                "가게명1",
+                "경기도 수원시",
+                "031-1234-5678",
+                "음식",
+                "육회비빔밥",
+                "한우육회비빔밥 입니다.",
+                1,
+                10000,
+                8000,
+                LocalDateTime.now().plusHours(1),
+                LocalDateTime.now().plusHours(6)
+        );
+
+        given(productService.getProduct(productId)).willReturn(product);
+
+        mockMvc.perform(get("/products/{productId}", productId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.storeName").value(product.storeName()))
+                .andExpect(jsonPath("$.categoryName").value(product.categoryName()))
+                .andExpect(jsonPath("$.description").value(product.description()))
+                .andDo(print());
+
+        verify(productService).getProduct(productId);
+    }
+
+    @Test
+    @DisplayName("모든 상품 조회 웹 테스트")
+    void getAllProducts() throws Exception {
+        ProductResponse productResponse1 = new ProductResponse(
+                1L,
+                "가게A",
+                "음식",
+                "비빔밥",
+                10000,
+                8000,
+                4,
+                LocalDateTime.now().plusHours(3),
+                LocalDateTime.now().plusHours(6)
+        );
+        ProductResponse productResponse2 = new ProductResponse(
+                2L,
+                "가게B",
+                "베이커리",
+                "랜덤빵박스",
+                25000,
+                20000,
+                2,
+                LocalDateTime.now().plusHours(1),
+                LocalDateTime.now().plusHours(9)
+        );
+
+        List<ProductResponse> content = List.of(productResponse1, productResponse2);
+        Pageable pageable = PageRequest.of(0, 2);
+        Slice<ProductResponse> slice = new SliceImpl<>(content, pageable, true);
+
+        given(productService.getAllProducts(any(Pageable.class))).willReturn(slice);
+
+        mockMvc.perform(get("/products"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].storeName").value(productResponse1.storeName()))
+                .andExpect(jsonPath("$.content[1].name").value(productResponse2.name()))
+                .andExpect(jsonPath("$.first").value(true))
+                .andExpect(jsonPath("$.size").value(2))
+                .andDo(print());
+
+        verify(productService).getAllProducts(any(Pageable.class));
+    }
+}
