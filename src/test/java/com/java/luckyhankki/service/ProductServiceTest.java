@@ -9,6 +9,7 @@ import com.java.luckyhankki.domain.store.StoreRepository;
 import com.java.luckyhankki.dto.ProductDetailResponse;
 import com.java.luckyhankki.dto.ProductRequest;
 import com.java.luckyhankki.dto.ProductResponse;
+import com.java.luckyhankki.dto.ProductUpdateRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +22,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -212,6 +214,46 @@ class ProductServiceTest {
         assertThat(response.productName()).isEqualTo(product.getName());
 
         verify(productRepository).findById(productId);
+    }
+
+    @Test
+    @DisplayName("상품 업데이트 테스트")
+    void updateProduct_success() {
+        long productId = 1L;
+        Store store = mock(Store.class);
+        Category category = mock(Category.class);
+
+        Product product = new Product(
+                store,
+                category,
+                "비빔밥",
+                10000,
+                8000,
+                1,
+                "육회비빔밥 입니다.",
+                LocalDateTime.now().plusHours(1),
+                LocalDateTime.now().plusHours(2)
+        );
+
+        when(productRepository.findById(productId))
+                .thenReturn(Optional.of(product));
+
+        ProductUpdateRequest request = new ProductUpdateRequest(
+                null,
+                 "우동",
+                null,
+                null,
+                2,
+                null,
+                null,
+                null
+        );
+
+        service.updateProduct(productId, request);
+
+        assertThat(product.getName()).isEqualTo("우동");
+        assertThat(product.getStock()).isEqualTo(2);
+        assertThat(product.getPriceOriginal()).isEqualTo(10000);
     }
 
     private static List<ProductResponse> getProductResponses(boolean isActive) {

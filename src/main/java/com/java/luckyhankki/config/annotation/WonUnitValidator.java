@@ -14,6 +14,9 @@ public class WonUnitValidator implements ConstraintValidator<WonUnit, Integer> {
 
     @Override
     public boolean isValid(Integer value, ConstraintValidatorContext context) {
+        if (value == null) {
+            return true;
+        }
         return value % unit == 0;
     }
 }

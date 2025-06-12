@@ -3,6 +3,7 @@ package com.java.luckyhankki.controller;
 import com.java.luckyhankki.dto.ProductDetailResponse;
 import com.java.luckyhankki.dto.ProductRequest;
 import com.java.luckyhankki.dto.ProductResponse;
+import com.java.luckyhankki.dto.ProductUpdateRequest;
 import com.java.luckyhankki.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
@@ -40,5 +41,20 @@ public class ProductController {
     @GetMapping
     public Slice<ProductResponse> getAllProducts(Pageable pageable) {
         return service.getAllProducts(pageable);
+    }
+
+    @PutMapping("/{productId}")
+    public ResponseEntity<Void> updateProduct(@PathVariable Long productId,
+                                              @Valid @RequestBody ProductUpdateRequest request) {
+        service.updateProduct(productId, request);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @DeleteMapping("/{productId}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long productId) {
+        service.deleteProduct(productId);
+
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }
