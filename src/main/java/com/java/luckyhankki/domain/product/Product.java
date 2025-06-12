@@ -7,6 +7,7 @@ import com.java.luckyhankki.dto.ProductUpdateRequest;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.function.Consumer;
 
 @Entity
 public class Product {
@@ -148,11 +149,31 @@ public class Product {
     }
 
     /**
-     * Product 업데이트 처리
+     * ProductUpdateRequest 필드값에 null이 아니고, 기존 Product의 값과 다른 값이 들어올 경우 업데이트
      *
      * @param request ProductUpdateRequest
      */
     public void updateProduct(ProductUpdateRequest request) {
-        request.updateIfPresent(this);
+        updateField(this::setName, request.name(), this.name);
+        updateField(this::setPriceOriginal, request.priceOriginal(), this.priceOriginal);
+        updateField(this::setPriceDiscount, request.priceDiscount(), this.priceDiscount);
+        updateField(this::setStock, request.stock(), this.stock);
+        updateField(this::setDescription, request.description(), this.description);
+        updateField(this::setPickupStartDateTime, request.pickupStartDateTime(), this.pickupStartDateTime);
+        updateField(this::setPickupEndDateTime, request.pickupEndDateTime(), this.pickupEndDateTime);
+    }
+
+    /**
+     * 필드 업데이트 내부 메소드
+     *
+     * @param consumer     Product의 setter 메서드 참조
+     * @param newValue     ProductUpdateRequest로 들어온 새로운 값
+     * @param currentValue 현재 Product에 저장되어 있는 값
+     * @param <T>          필드 타입
+     */
+    private <T> void updateField(Consumer<T> consumer, T newValue, T currentValue) {
+        if (newValue != null && !newValue.equals(currentValue)) {
+            consumer.accept(newValue);
+        }
     }
 }
