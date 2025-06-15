@@ -45,6 +45,7 @@ public class User {
     private BigDecimal latitude;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
     private RoleType roleType;
 
     @Column(nullable = false)
@@ -60,6 +61,7 @@ public class User {
 
     private LocalDateTime lastLoginAt;
 
+    @JsonProperty("isDeleted")
     @Column(nullable = false)
     private boolean isDeleted;
 

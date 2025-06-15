@@ -5,6 +5,8 @@ import com.java.luckyhankki.domain.category.Category;
 import com.java.luckyhankki.domain.store.Store;
 import com.java.luckyhankki.dto.ProductUpdateRequest;
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.function.Consumer;
@@ -25,22 +27,37 @@ public class Product {
     @JoinColumn(name = "category_id")
     private Category category;
 
+    @Column(nullable = false, length = 50)
     private String name;
 
+    @Column(nullable = false)
     private int priceOriginal;
 
+    @Column(nullable = false)
     private int priceDiscount;
 
+    @Column(nullable = false)
     private int stock;
 
     private String description;
 
+    @Column(nullable = false)
     private LocalDateTime pickupStartDateTime;
 
+    @Column(nullable = false)
     private LocalDateTime pickupEndDateTime;
 
     @JsonProperty("isActive")
+    @Column(nullable = false)
     private boolean isActive;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(insertable = false)
+    private LocalDateTime updatedAt;
 
     protected Product() {}
 
@@ -128,6 +145,14 @@ public class Product {
 
     public boolean isActive() {
         return isActive;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 
     /**
