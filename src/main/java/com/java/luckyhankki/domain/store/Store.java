@@ -51,6 +51,9 @@ public class Store {
     @Column(insertable = false)
     private LocalDateTime updatedAt;
 
+    @Column(nullable = false)
+    private boolean isDeleted;
+
     protected Store() {}
 
     public Store(Seller seller, String name, String phone, String address, BigDecimal longitude, BigDecimal latitude) {
@@ -62,6 +65,7 @@ public class Store {
         this.latitude = latitude;
         this.isApproved = false;
         this.reportCount = 0;
+        this.isDeleted = false;
     }
 
     public Long getId() {
@@ -112,4 +116,7 @@ public class Store {
         return updatedAt;
     }
 
+    public boolean isDeleted() {
+        return isDeleted;
+    }
 }
