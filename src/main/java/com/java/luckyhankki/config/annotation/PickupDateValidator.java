@@ -10,6 +10,10 @@ public class PickupDateValidator implements ConstraintValidator<PickupDate, Loca
 
     @Override
     public boolean isValid(LocalDateTime value, ConstraintValidatorContext context) {
+        if (value == null) {
+            return true;
+        }
+
         LocalDate pickupDate = value.toLocalDate();
         LocalDate today = LocalDate.now();
         LocalDate tomorrow = today.plusDays(1);

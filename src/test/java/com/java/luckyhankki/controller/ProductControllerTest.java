@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.java.luckyhankki.dto.ProductDetailResponse;
 import com.java.luckyhankki.dto.ProductRequest;
 import com.java.luckyhankki.dto.ProductResponse;
+import com.java.luckyhankki.dto.ProductUpdateRequest;
 import com.java.luckyhankki.service.ProductService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,8 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -198,5 +198,40 @@ class ProductControllerTest {
                 .andDo(print());
 
         verify(productService).getAllProducts(any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("상품 업데이트 웹 테스트")
+    void updateProduct() throws Exception {
+        Long productId = 1L;
+        ProductUpdateRequest productUpdateRequest = new ProductUpdateRequest(
+                null,
+                "초밥",
+                250000,
+                null,
+                null,
+                "name, priceOriginal, description 변경",
+                null,
+                null
+        );
+
+        mockMvc.perform(put("/products/{productId}", productId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(productUpdateRequest)))
+                        .andExpect(status().isNoContent())
+                .andDo(print());
+
+        verify(productService).updateProduct(eq(productId), any(ProductUpdateRequest.class));
+    }
+
+    @Test
+    @DisplayName("hard delete 웹 테스트")
+    void deleteProduct() throws Exception {
+        Long productId = 1L;
+
+        mockMvc.perform(delete("/products/{productId}", productId))
+                .andExpect(status().isOk());
+
+        verify(productService).deleteProduct(eq(productId));
     }
 }
