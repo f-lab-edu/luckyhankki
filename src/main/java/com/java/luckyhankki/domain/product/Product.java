@@ -189,6 +189,18 @@ public class Product {
     }
 
     /**
+     * 재고 소진 메소드
+     *
+     * @param quantity 사용자가 선택한 수량
+     */
+    public void decreaseStock(int quantity) {
+        if (this.stock < quantity) {
+            throw new IllegalArgumentException("재고가 부족합니다. [현재 재고 수량: " + this.stock + "]");
+        }
+        this.stock -= quantity;
+    }
+
+    /**
      * 필드 업데이트 내부 메소드
      *
      * @param consumer     Product의 setter 메서드 참조
