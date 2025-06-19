@@ -34,7 +34,7 @@ class SellerControllerTest {
     void createSeller() throws Exception {
         // given
         SellerRequest request = new SellerRequest(
-                "1234567890", "홍길동", "abc1234", "test@test.com"
+                "1234567890", "홍길동", "AAbc@!1234", "test@test.com"
         );
         SellerResponse response = new SellerResponse(
                 "1234567890", "홍길동", "test@test.com"
