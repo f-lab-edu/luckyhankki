@@ -40,6 +40,13 @@ public class Reservation {
 
     protected Reservation() {}
 
+    public Reservation(User user, Product product, int quantity) {
+        this.user = user;
+        this.product = product;
+        this.quantity = quantity;
+        this.status = ReservationStatus.CONFIRMED;
+    }
+
     public Long getId() {
         return id;
     }
