@@ -1,13 +1,13 @@
 package com.java.luckyhankki.domain.product;
 
-import com.java.luckyhankki.dto.ProductResponse;
+import com.java.luckyhankki.dto.product.ProductResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface ProductRepository extends JpaRepository<Product, Long> {
+public interface ProductRepository extends JpaRepository<Product, Long>, ProductRepositoryCustom {
     //해당 가게의 비활성화된 상품도 함께 조회
     List<ProductResponse> findAllByStoreId(Long storeId);
 

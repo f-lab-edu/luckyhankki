@@ -6,6 +6,7 @@ plugins {
 
 group = 'com.java'
 version = '0.0.1-SNAPSHOT'
+def queryDslVersion = '6.11'
 
 java {
 	toolchain {
@@ -32,8 +33,17 @@ dependencies {
 
 	//Swagger
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
+
+	//QueryDSL
+	implementation("io.github.openfeign.querydsl:querydsl-core:${queryDslVersion}")
+	implementation("io.github.openfeign.querydsl:querydsl-jpa:$queryDslVersion")
+	annotationProcessor("io.github.openfeign.querydsl:querydsl-apt:$queryDslVersion:jpa")
 }
 
 test {
 	useJUnitPlatform()
+}
+
+clean {
+	delete file('src/main/generated')
 }

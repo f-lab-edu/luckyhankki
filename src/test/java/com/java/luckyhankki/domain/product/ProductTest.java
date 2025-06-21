@@ -1,15 +1,21 @@
 package com.java.luckyhankki.domain.product;
 
+import com.java.luckyhankki.domain.category.Category;
+import com.java.luckyhankki.domain.category.CategoryRepository;
 import com.java.luckyhankki.domain.seller.Seller;
 import com.java.luckyhankki.domain.seller.SellerRepository;
 import com.java.luckyhankki.domain.store.Store;
 import com.java.luckyhankki.domain.store.StoreRepository;
-import com.java.luckyhankki.dto.ProductResponse;
+import com.java.luckyhankki.dto.product.ProductResponse;
+import com.java.luckyhankki.dto.product.ProductSearchCondition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
@@ -31,7 +37,12 @@ class ProductTest {
     @Autowired
     private SellerRepository sellerRepository;
 
+    @Autowired
+    private CategoryRepository categoryRepository;
+
     private Store savedStore;
+
+    private Long categoryBakeryId;
 
     @BeforeEach
     void setUp() {
@@ -48,24 +59,43 @@ class ProductTest {
         );
         savedStore = storeRepository.save(store);
 
+        Category categoryFood = new Category("음식");
+        categoryRepository.save(categoryFood);
+
+        Category categoryBakery = new Category("빵");
+        categoryBakeryId = categoryRepository.save(categoryBakery).getId();
+
         // 상품 저장 (isActive = true)
-        Product activeProduct = new Product(
+        Product productBibimbap = new Product(
                 store,
-                null,
+                categoryFood,
                 "비빔밥",
                 10000,
                 8000,
                 3,
-                "육회비빔밥입니다.",
+                "육회비빔밥 입니다.",
                 LocalDateTime.now().plusHours(1),
                 LocalDateTime.now().plusHours(2)
         );
-        productRepository.save(activeProduct);
+        productRepository.save(productBibimbap);
+
+        Product productBread = new Product(
+                store,
+                categoryBakery,
+                "소금빵",
+                5000,
+                2000,
+                1,
+                "소금빵 입니다.",
+                LocalDateTime.now().plusMinutes(2),
+                LocalDateTime.now().plusHours(6)
+        );
+        productRepository.save(productBread);
 
         // 상품 저장 (isActive = false)
         Product inactiveProduct = new Product(
                 store,
-                null,
+                categoryFood,
                 "김밥",
                 5000,
                 4500,
@@ -83,14 +113,39 @@ class ProductTest {
     void testFindAllByStoreId() {
         List<ProductResponse> products = productRepository.findAllByStoreId(savedStore.getId());
 
+        assertThat(products).hasSize(3);
+    }
+
+    @Test
+    @DisplayName("storeId에 소속된 isActive가 true인 상품만 조회")
+    void testFindAllByStoreIdAndIsActiveTrue() {
+        List<ProductResponse> products = productRepository.findAllByStoreIdAndIsActiveTrue(savedStore.getId());
+
         assertThat(products).hasSize(2);
     }
 
     @Test
     @DisplayName("isActive가 true인 상품만 조회")
-    void testFindAllByStoreIdAndIsActiveTrue() {
-        List<ProductResponse> products = productRepository.findAllByStoreIdAndIsActiveTrue(savedStore.getId());
+    void testFindAllByIsActiveTrue() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Slice<ProductResponse> products = productRepository.findAllByIsActiveTrue(pageable);
 
-        assertThat(products).hasSize(1);
+        assertThat(products).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("카테고리가 베이커리이고, 픽업 날짜가 오늘인 상품 조회")
+    void testFindAllByCondition() {
+        ProductSearchCondition condition = new ProductSearchCondition(
+                categoryBakeryId,
+                ProductSearchCondition.PickupDateFilter.TODAY,
+                null,
+                ProductSearchCondition.SortType.PRICE);
+
+        PageRequest pageRequest = PageRequest.of(0, 10);
+        Slice<ProductResponse> result = productRepository.findAllByCondition(condition, pageRequest);
+
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent()).extracting("name").containsExactly("소금빵");
     }
 }
