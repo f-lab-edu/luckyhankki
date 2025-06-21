@@ -3,7 +3,7 @@ package com.java.luckyhankki.domain.product;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.java.luckyhankki.domain.category.Category;
 import com.java.luckyhankki.domain.store.Store;
-import com.java.luckyhankki.dto.ProductUpdateRequest;
+import com.java.luckyhankki.dto.product.ProductUpdateRequest;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;

@@ -1,11 +1,13 @@
-package com.java.luckyhankki.dto;
+package com.java.luckyhankki.dto.product;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.querydsl.core.annotations.QueryProjection;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
 
 @Schema(description = "상품 목록 조회 응답 DTO")
+@QueryProjection
 public record ProductResponse(
 
         @Schema(description = "상품 ID", example = "1")

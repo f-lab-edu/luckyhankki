@@ -1,6 +1,6 @@
 package com.java.luckyhankki.controller;
 
-import com.java.luckyhankki.dto.ProductResponse;
+import com.java.luckyhankki.dto.product.ProductResponse;
 import com.java.luckyhankki.dto.StoreRequest;
 import com.java.luckyhankki.dto.StoreResponse;
 import com.java.luckyhankki.service.ProductService;

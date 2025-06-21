@@ -1,9 +1,6 @@
 package com.java.luckyhankki.controller;
 
-import com.java.luckyhankki.dto.ProductDetailResponse;
-import com.java.luckyhankki.dto.ProductRequest;
-import com.java.luckyhankki.dto.ProductResponse;
-import com.java.luckyhankki.dto.ProductUpdateRequest;
+import com.java.luckyhankki.dto.product.*;
 import com.java.luckyhankki.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -50,6 +47,15 @@ public class ProductController {
     @GetMapping
     public Slice<ProductResponse> getAllProducts(@ParameterObject Pageable pageable) {
         return service.getAllProducts(pageable);
+    }
+
+    @Operation(summary = "조회 조건에 따른 상품 목록 조회", description = "조회 조건에 따라 활성화 상태의 등록된 상품을 조회합니다.")
+    @GetMapping("/condition")
+    public Slice<ProductResponse> searchProductsByCondition(
+            @Parameter(description = "상품 조회 조건") ProductSearchCondition condition,
+            @ParameterObject Pageable pageable) {
+
+        return service.searchProductsByCondition(condition, pageable);
     }
 
     @Operation(summary = "상품 수정", description = "상품 ID에 해당하는 상품을 수정합니다.")
