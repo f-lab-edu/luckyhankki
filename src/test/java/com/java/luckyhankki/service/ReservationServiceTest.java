@@ -9,6 +9,8 @@ import com.java.luckyhankki.domain.reservation.ReservationStatus;
 import com.java.luckyhankki.domain.store.Store;
 import com.java.luckyhankki.domain.user.User;
 import com.java.luckyhankki.domain.user.UserRepository;
+import com.java.luckyhankki.dto.reservation.ReservationDetailResponse;
+import com.java.luckyhankki.dto.reservation.ReservationListResponse;
 import com.java.luckyhankki.dto.reservation.ReservationRequest;
 import com.java.luckyhankki.dto.reservation.ReservationResponse;
 import org.junit.jupiter.api.DisplayName;
@@ -19,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -81,4 +84,54 @@ class ReservationServiceTest {
         verify(productRepository).findByIdWithLock(productId);
         verify(reservationRepository).save(any(Reservation.class));
     }
+
+    @Test
+    @DisplayName("사용자 예약 목록 조회 성공")
+    void getUserReservations_success() {
+        long userId = 1L;
+        User user = mock(User.class);
+
+        Product product1 = mock(Product.class);
+        when(product1.getName()).thenReturn("비빔밥");
+
+        Product product2 = mock(Product.class);
+        when(product2.getName()).thenReturn("소금빵");
+
+        Reservation reservation1 = new Reservation(user, product1, 2);
+        Reservation reservation2 = new Reservation(user, product2, 2);
+
+        when(reservationRepository.findAllByUserId(userId))
+                .thenReturn(List.of(reservation1, reservation2));
+
+        List<ReservationListResponse> result = service.getUserReservations(userId);
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).productName()).isEqualTo("비빔밥");
+        assertThat(result.get(1).productName()).isEqualTo("소금빵");
+
+        verify(reservationRepository).findAllByUserId(userId);
+    }
+
+    @Test
+    @DisplayName("사용자 예약 단건 조회 성공")
+    void getUserReservation_success() {
+        long reservationId = 1L;
+        long userId = 1L;
+        User user = mock(User.class);
+
+        Product product = mock(Product.class);
+        when(product.getName()).thenReturn("비빔밥");
+
+        Reservation reservation = new Reservation(user, product, 2);
+        when(reservationRepository.findByIdAndUserId(reservationId, userId))
+                .thenReturn(reservation);
+
+        ReservationDetailResponse result = service.getUserReservation(userId, reservationId);
+
+        assertThat(result).isNotNull();
+        assertThat(result.productName()).isEqualTo("비빔밥");
+
+        verify(reservationRepository).findByIdAndUserId(reservationId, userId);
+    }
+
 }

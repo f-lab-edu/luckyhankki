@@ -19,6 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -75,9 +76,7 @@ class ReservationTest {
     @Test
     @DisplayName("예약 저장 테스트")
     public void save() {
-        Reservation reservation = new Reservation(user, product, 2);
-
-        Reservation saved = reservationRepository.save(reservation);
+        Reservation saved = getReservation();
 
         assertThat(saved.getId()).isNotNull();
         assertThat(saved.getUser().getId()).isEqualTo(user.getId());
@@ -85,5 +84,29 @@ class ReservationTest {
         assertThat(saved.getQuantity()).isEqualTo(2);
         assertThat(saved.getStatus()).isEqualTo(ReservationStatus.CONFIRMED);
         assertThat(saved.getCreatedAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("사용자가 예약한 예약목록 조회")
+    public void findAllByUserId() {
+        getReservation();
+        List<Reservation> reservations = reservationRepository.findAllByUserId(user.getId());
+
+        assertThat(reservations).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("사용자가 예약한 예약ID에 해당하는 예약 단건 조회")
+    public void findByUserIdAndId() {
+        Reservation reservation = getReservation();
+        Reservation findReservation = reservationRepository.findByIdAndUserId(reservation.getId(), user.getId());
+
+        assertThat(findReservation).isNotNull();
+    }
+
+    private Reservation getReservation() {
+        Reservation reservation = new Reservation(user, product, 2);
+
+        return reservationRepository.save(reservation);
     }
 }

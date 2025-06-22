@@ -201,6 +201,15 @@ public class Product {
     }
 
     /**
+     * 재고 증가 메소드
+     *
+     * @param quantity 사용자가 선택한 수량
+     */
+    public void increaseStock(int quantity) {
+        this.stock += quantity;
+    }
+
+    /**
      * 필드 업데이트 내부 메소드
      *
      * @param consumer     Product의 setter 메서드 참조

@@ -4,12 +4,17 @@ import com.java.luckyhankki.domain.product.Product;
 import com.java.luckyhankki.domain.product.ProductRepository;
 import com.java.luckyhankki.domain.reservation.Reservation;
 import com.java.luckyhankki.domain.reservation.ReservationRepository;
+import com.java.luckyhankki.domain.reservation.ReservationStatus;
 import com.java.luckyhankki.domain.user.User;
 import com.java.luckyhankki.domain.user.UserRepository;
+import com.java.luckyhankki.dto.reservation.ReservationDetailResponse;
+import com.java.luckyhankki.dto.reservation.ReservationListResponse;
 import com.java.luckyhankki.dto.reservation.ReservationRequest;
 import com.java.luckyhankki.dto.reservation.ReservationResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @Transactional
@@ -39,5 +44,50 @@ public class ReservationService {
                 savedReservation.getQuantity(),
                 savedReservation.getStatus().name());
     }
-    
+
+    /**
+     * 사용자 ID에 해당하는 모든 예약 목록들 조회
+     */
+    @Transactional(readOnly = true)
+    public List<ReservationListResponse> getUserReservations(Long userId) {
+        List<Reservation> reservations = reservationRepository.findAllByUserId(userId);
+
+        return reservations.stream()
+                .map(r -> new ReservationListResponse(
+                        r.getProduct().getName(),
+                        r.getProduct().getPriceDiscount(),
+                        r.getStatus().name(),
+                        r.getCreatedAt()))
+                .toList();
+    }
+
+    /**
+     * 사용자 ID, 예약ID에 해당하는 단건 예약 조회
+     */
+    @Transactional(readOnly = true)
+    public ReservationDetailResponse getUserReservation(Long userId, Long reservationId) {
+        Reservation reservation = reservationRepository.findByIdAndUserId(reservationId, userId);
+        Product product = reservation.getProduct();
+
+        return new ReservationDetailResponse(product.getName(),
+                product.getPriceOriginal(),
+                product.getPriceDiscount(),
+                product.getPickupStartDateTime(),
+                product.getPickupEndDateTime(),
+                reservation.getQuantity(),
+                reservation.getStatus().name(),
+                reservation.getCreatedAt());
+    }
+
+    public void cancelUserReservation(Long userId, Long reservationId) {
+        Reservation reservation = reservationRepository.findByIdAndUserId(userId, reservationId);
+        Product product = reservation.getProduct();
+
+        if (reservation.getStatus() == ReservationStatus.CANCELLED || reservation.getStatus() == ReservationStatus.COMPLETED) {
+            throw new RuntimeException("해당 예약건은 취소가 불가능합니다.");
+        }
+
+        reservation.setStatus(ReservationStatus.CANCELLED);
+        product.increaseStock(reservation.getQuantity()); //재고 증가
+    }
 }

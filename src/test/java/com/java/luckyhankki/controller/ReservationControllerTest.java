@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -52,5 +53,17 @@ class ReservationControllerTest {
                 .andDo(print());
 
         verify(service).reserveProduct(request);
+    }
+
+    @Test
+    @DisplayName("상품 예약 취소 웹 테스트")
+    void cancelReservation() throws Exception {
+        Long userId = 1L;
+        Long reservationId = 1L;
+
+        mockMvc.perform(delete("/reservations/{userId}/{reservationId}", userId, reservationId))
+                .andExpect(status().isOk());
+
+        verify(service).cancelUserReservation(userId, reservationId);
     }
 }
