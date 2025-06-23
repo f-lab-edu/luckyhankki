@@ -8,10 +8,7 @@ import com.java.luckyhankki.domain.reservation.ReservationRepository;
 import com.java.luckyhankki.domain.reservation.ReservationStatus;
 import com.java.luckyhankki.domain.user.User;
 import com.java.luckyhankki.domain.user.UserRepository;
-import com.java.luckyhankki.dto.reservation.ReservationDetailResponse;
-import com.java.luckyhankki.dto.reservation.ReservationListResponse;
-import com.java.luckyhankki.dto.reservation.ReservationRequest;
-import com.java.luckyhankki.dto.reservation.ReservationResponse;
+import com.java.luckyhankki.dto.reservation.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,7 +47,7 @@ public class ReservationService {
      * 사용자 ID에 해당하는 모든 예약 목록들 조회
      */
     @Transactional(readOnly = true)
-    public List<ReservationListResponse> getUserReservations(Long userId) {
+    public List<ReservationListResponse> getReservationListByUser(Long userId) {
         List<Reservation> reservations = reservationRepository.findAllByUserId(userId);
 
         return reservations.stream()
@@ -64,9 +61,10 @@ public class ReservationService {
 
     /**
      * 사용자 ID, 예약ID에 해당하는 단건 예약 조회
+     * TODO 가게명, 가게주소도 응답
      */
     @Transactional(readOnly = true)
-    public ReservationDetailResponse getUserReservation(Long userId, Long reservationId) {
+    public ReservationDetailResponse getReservationByUser(Long userId, Long reservationId) {
         Reservation reservation = reservationRepository.findByIdAndUserId(reservationId, userId);
         Product product = reservation.getProduct();
 
@@ -83,7 +81,7 @@ public class ReservationService {
     /**
      * 사용자 예약 취소
      */
-    public void cancelUserReservation(Long userId, Long reservationId) {
+    public void cancelReservationByUser(Long userId, Long reservationId) {
         Reservation reservation = reservationRepository.findByIdAndUserId(userId, reservationId);
         Product product = reservation.getProduct();
 
@@ -99,8 +97,30 @@ public class ReservationService {
      * 가게 ID에 해당하는 모든 예약 목록 조회
      */
     @Transactional(readOnly = true)
-    public List<ReservationProjection> getStoreReservations(Long storeId) {
+    public List<ReservationProjection> getReservationListByStore(Long storeId) {
         return reservationRepository.findAllByStoreId(storeId);
     }
 
+    @Transactional(readOnly = true)
+    public StoreReservationDetailResponse getReservationDetailsByStore(Long reservationId, Long storeId) {
+        Reservation reservation = reservationRepository.findByIdAndProductStoreId(reservationId, storeId)
+                .orElseThrow(() -> new RuntimeException("해당 예약 내역이 존재하지 않습니다."));
+        Product product = reservation.getProduct();
+        User user = reservation.getUser();
+
+        return new StoreReservationDetailResponse(
+                reservationId,
+                product.getName(),
+                user.getName(),
+                user.getPhone().substring(7), //휴대폰 뒷자리
+                reservation.getQuantity(),
+                product.getPriceOriginal(),
+                product.getPriceDiscount(),
+                (product.getPriceDiscount() * reservation.getQuantity()), //총 금액
+                product.getPickupStartDateTime(),
+                product.getPickupEndDateTime(),
+                reservation.getStatus().name(),
+                reservation.getCreatedAt()
+        );
+    }
 }

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
     @EntityGraph(attributePaths = {"product"})
@@ -18,5 +19,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             "r.quantity AS quantity, (r.product.priceDiscount * r.quantity) AS totalPrice, r.status AS status, r.createdAt AS createdAt " +
             "FROM Reservation r JOIN r.product WHERE r.product.store.id = :storeId")
     List<ReservationProjection> findAllByStoreId(@Param("storeId") Long storeId);
+
+    @EntityGraph(attributePaths = {"product", "user"})
+    Optional<Reservation> findByIdAndProductStoreId(Long reservationId, Long storeId);
 
 }

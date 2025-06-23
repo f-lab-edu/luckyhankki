@@ -5,6 +5,7 @@ import com.java.luckyhankki.domain.reservation.ReservationProjection;
 import com.java.luckyhankki.domain.reservation.ReservationStatus;
 import com.java.luckyhankki.dto.reservation.ReservationRequest;
 import com.java.luckyhankki.dto.reservation.ReservationResponse;
+import com.java.luckyhankki.dto.reservation.StoreReservationDetailResponse;
 import com.java.luckyhankki.service.ReservationService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -60,19 +61,19 @@ class ReservationControllerTest {
 
     @Test
     @DisplayName("상품 예약 취소 웹 테스트")
-    void cancelReservation() throws Exception {
+    void cancelReservationByUser() throws Exception {
         Long userId = 1L;
         Long reservationId = 1L;
 
         mockMvc.perform(delete("/reservations/{userId}/{reservationId}", userId, reservationId))
                 .andExpect(status().isOk());
 
-        verify(service).cancelUserReservation(userId, reservationId);
+        verify(service).cancelReservationByUser(userId, reservationId);
     }
 
     @Test
     @DisplayName("가게 예약 목록 조회 웹 테스트")
-    void getStoreReservation() throws Exception {
+    void getReservationListByStore() throws Exception {
         Long storeId = 1L;
         ReservationProjection mockProjection = new ReservationProjection() {
             @Override public Long getId() { return 1L; }
@@ -84,7 +85,7 @@ class ReservationControllerTest {
             @Override public LocalDateTime getCreatedAt() { return LocalDateTime.now(); }
         };
 
-        given(service.getStoreReservations(storeId))
+        given(service.getReservationListByStore(storeId))
                 .willReturn(List.of(mockProjection));
 
         mockMvc.perform(get("/reservations/stores/{storeId}", storeId))
@@ -93,6 +94,38 @@ class ReservationControllerTest {
                 .andExpect(jsonPath("$[0].productName").value("소금빵"))
                 .andDo(print());
 
-        verify(service).getStoreReservations(storeId);
+        verify(service).getReservationListByStore(storeId);
+    }
+
+    @Test
+    @DisplayName("가게-예약 내역 상세 조회 웹 테스트")
+    void getDetailReservationByStore() throws Exception {
+        long storeId = 1L;
+        long reservationId = 1L;
+        StoreReservationDetailResponse response = new StoreReservationDetailResponse(
+                reservationId,
+                "1인럭키세트",
+                "홍길동",
+                "5678",
+                2,
+                10000,
+                8000,
+                16000,
+                LocalDateTime.now(),
+                LocalDateTime.now().plusHours(1),
+                "CONFIRMED",
+                LocalDateTime.now()
+        );
+
+        given(service.getReservationDetailsByStore(reservationId, storeId))
+                .willReturn(response);
+
+        mockMvc.perform(get("/reservations/stores/{storeId}/{reservationId}", storeId, reservationId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.productName").value("1인럭키세트"))
+                .andExpect(jsonPath("$.quantity").value(2))
+                .andDo(print());
+
+        verify(service).getReservationDetailsByStore(reservationId, storeId);
     }
 }

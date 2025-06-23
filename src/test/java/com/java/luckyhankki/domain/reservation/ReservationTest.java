@@ -20,6 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -106,6 +107,7 @@ class ReservationTest {
     }
 
     @Test
+    @DisplayName("가게에 등록된 모든 예약 내역 조회")
     public void findAllByStoreId() {
         getReservation();
 
@@ -114,6 +116,21 @@ class ReservationTest {
         assertThat(reservations).isNotEmpty();
         assertThat(reservations.get(0).getProductName()).isEqualTo(product.getName());
         assertThat(reservations.get(0).getQuantity()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("가게ID와 예약ID로 예약 내역 상세 조회")
+    public void findByIdAndProductStoreId() {
+        Reservation reservation = getReservation();
+
+        Optional<Reservation> optional = reservationRepository.findByIdAndProductStoreId(reservation.getId(), store.getId());
+
+        assertThat(optional).isPresent();
+
+        Reservation result = optional.get();
+        assertThat(result.getUser().getId()).isEqualTo(user.getId());
+        assertThat(result.getProduct().getId()).isEqualTo(product.getId());
+        assertThat(result.getQuantity()).isEqualTo(2);
     }
 
     private Reservation getReservation() {

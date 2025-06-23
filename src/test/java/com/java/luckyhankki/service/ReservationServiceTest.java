@@ -10,10 +10,7 @@ import com.java.luckyhankki.domain.reservation.ReservationStatus;
 import com.java.luckyhankki.domain.store.Store;
 import com.java.luckyhankki.domain.user.User;
 import com.java.luckyhankki.domain.user.UserRepository;
-import com.java.luckyhankki.dto.reservation.ReservationDetailResponse;
-import com.java.luckyhankki.dto.reservation.ReservationListResponse;
-import com.java.luckyhankki.dto.reservation.ReservationRequest;
-import com.java.luckyhankki.dto.reservation.ReservationResponse;
+import com.java.luckyhankki.dto.reservation.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -89,7 +86,7 @@ class ReservationServiceTest {
 
     @Test
     @DisplayName("사용자 예약 목록 조회 성공")
-    void getUserReservations_success() {
+    void getReservations_successByUser() {
         long userId = 1L;
         User user = mock(User.class);
 
@@ -105,7 +102,7 @@ class ReservationServiceTest {
         when(reservationRepository.findAllByUserId(userId))
                 .thenReturn(List.of(reservation1, reservation2));
 
-        List<ReservationListResponse> result = service.getUserReservations(userId);
+        List<ReservationListResponse> result = service.getReservationListByUser(userId);
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).productName()).isEqualTo("비빔밥");
@@ -116,7 +113,7 @@ class ReservationServiceTest {
 
     @Test
     @DisplayName("사용자 예약 단건 조회 성공")
-    void getUserReservation_success() {
+    void getReservation_ByUser_success() {
         long reservationId = 1L;
         long userId = 1L;
         User user = mock(User.class);
@@ -128,7 +125,7 @@ class ReservationServiceTest {
         when(reservationRepository.findByIdAndUserId(reservationId, userId))
                 .thenReturn(reservation);
 
-        ReservationDetailResponse result = service.getUserReservation(userId, reservationId);
+        ReservationDetailResponse result = service.getReservationByUser(userId, reservationId);
 
         assertThat(result).isNotNull();
         assertThat(result.productName()).isEqualTo("비빔밥");
@@ -138,7 +135,7 @@ class ReservationServiceTest {
 
     @Test
     @DisplayName("가게 예약 목록 조회 성공")
-    void getStoreReservations_success() {
+    void getReservationListByStore_success() {
         // given
         Long storeId = 1L;
         ReservationProjection mockProjection = new ReservationProjection() {
@@ -155,11 +152,42 @@ class ReservationServiceTest {
                 .willReturn(List.of(mockProjection));
 
         // when
-        List<ReservationProjection> result = service.getStoreReservations(storeId);
+        List<ReservationProjection> result = service.getReservationListByStore(storeId);
 
         // then
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getProductName()).isEqualTo("소금빵");
         assertThat(result.get(0).getTotalPrice()).isEqualTo(6000);
+
+        verify(reservationRepository).findAllByStoreId(storeId);
+    }
+
+    @Test
+    @DisplayName("가게 입장에서의 예약 상세 조회")
+    void getReservationDetailsByStore() {
+        long reservationId = 1L;
+        long storeId = 1L;
+
+        User user = mock(User.class);
+        Product product = mock(Product.class);
+
+        when(user.getName()).thenReturn("홍길동");
+        when(user.getPhone()).thenReturn("01012345678");
+        when(product.getName()).thenReturn("비빔밥");
+
+        Reservation reservation = new Reservation(user, product, 2);
+
+        when(reservationRepository.findByIdAndProductStoreId(reservationId, storeId))
+                .thenReturn(Optional.of(reservation));
+
+        StoreReservationDetailResponse result = service.getReservationDetailsByStore(reservationId, storeId);
+
+        assertThat(result).isNotNull();
+        assertThat(result.reservationId()).isEqualTo(reservationId);
+        assertThat(result.productName()).isEqualTo("비빔밥");
+        assertThat(result.userName()).isEqualTo("홍길동");
+        assertThat(result.userPhone()).isEqualTo("5678");
+
+        verify(reservationRepository).findByIdAndProductStoreId(reservationId, storeId);
     }
 }
