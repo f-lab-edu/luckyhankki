@@ -113,7 +113,7 @@ class ReservationControllerTest {
                 16000,
                 LocalDateTime.now(),
                 LocalDateTime.now().plusHours(1),
-                "CONFIRMED",
+                ReservationStatus.CONFIRMED,
                 LocalDateTime.now()
         );
 

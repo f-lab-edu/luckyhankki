@@ -175,10 +175,23 @@ class ReservationServiceTest {
         when(user.getPhone()).thenReturn("01012345678");
         when(product.getName()).thenReturn("비빔밥");
 
-        Reservation reservation = new Reservation(user, product, 2);
+        StoreReservationDetailResponse mockResponse = new StoreReservationDetailResponse(
+                reservationId,
+                product.getName(),
+                user.getName(),
+                user.getPhone().substring(7),
+                2,
+                10000,
+                8000,
+                16000,
+                LocalDateTime.now(),
+                LocalDateTime.now().plusHours(1),
+                ReservationStatus.CONFIRMED,
+                LocalDateTime.now()
+        );
 
         when(reservationRepository.findByIdAndProductStoreId(reservationId, storeId))
-                .thenReturn(Optional.of(reservation));
+                .thenReturn(mockResponse);
 
         StoreReservationDetailResponse result = service.getReservationDetailsByStore(reservationId, storeId);
 

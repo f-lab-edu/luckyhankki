@@ -1,6 +1,7 @@
 package com.java.luckyhankki.dto.reservation;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.java.luckyhankki.domain.reservation.ReservationStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
@@ -41,7 +42,7 @@ public record StoreReservationDetailResponse (
         LocalDateTime pickupEndDateTime,
 
         @Schema(description = "예약 상태", example = "CONFIRMED")
-        String status,
+        ReservationStatus status,
 
         @Schema(description = "예약 생성 일시", example = "2025-06-22 19:00")
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")

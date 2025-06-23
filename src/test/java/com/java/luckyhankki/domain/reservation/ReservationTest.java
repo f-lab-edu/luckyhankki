@@ -10,6 +10,7 @@ import com.java.luckyhankki.domain.store.Store;
 import com.java.luckyhankki.domain.store.StoreRepository;
 import com.java.luckyhankki.domain.user.User;
 import com.java.luckyhankki.domain.user.UserRepository;
+import com.java.luckyhankki.dto.reservation.StoreReservationDetailResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,6 @@ import org.springframework.test.context.ActiveProfiles;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -53,7 +53,7 @@ class ReservationTest {
     @BeforeEach
     void setUp() {
         // 사용자 생성
-        user = new User("user@test.com", "홍길동", "010-1111-2222",
+        user = new User("user@test.com", "홍길동", "01011112222",
                 "경기도 수원시 XX구 XX동", BigDecimal.valueOf(37.123456), BigDecimal.valueOf(126.123456));
         user.changePassword("abc456#!@");
         user = userRepository.save(user);
@@ -127,14 +127,10 @@ class ReservationTest {
     public void findByIdAndProductStoreId() {
         Reservation reservation = getReservation();
 
-        Optional<Reservation> optional = reservationRepository.findByIdAndProductStoreId(reservation.getId(), store.getId());
+        StoreReservationDetailResponse optional = reservationRepository.findByIdAndProductStoreId(reservation.getId(), store.getId());
 
-        assertThat(optional).isPresent();
-
-        Reservation result = optional.get();
-        assertThat(result.getUser().getId()).isEqualTo(user.getId());
-        assertThat(result.getProduct().getId()).isEqualTo(product.getId());
-        assertThat(result.getQuantity()).isEqualTo(2);
+        assertThat(optional).isNotNull();
+        assertThat(optional.userPhone()).isEqualTo("2222");
     }
 
     private Reservation getReservation() {

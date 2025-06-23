@@ -101,26 +101,11 @@ public class ReservationService {
         return reservationRepository.findAllByStoreId(storeId);
     }
 
+    /**
+     * 가게에 예약 내역 상세 조회
+     */
     @Transactional(readOnly = true)
     public StoreReservationDetailResponse getReservationDetailsByStore(Long reservationId, Long storeId) {
-        Reservation reservation = reservationRepository.findByIdAndProductStoreId(reservationId, storeId)
-                .orElseThrow(() -> new RuntimeException("해당 예약 내역이 존재하지 않습니다."));
-        Product product = reservation.getProduct();
-        User user = reservation.getUser();
-
-        return new StoreReservationDetailResponse(
-                reservationId,
-                product.getName(),
-                user.getName(),
-                user.getPhone().substring(7), //휴대폰 뒷자리
-                reservation.getQuantity(),
-                product.getPriceOriginal(),
-                product.getPriceDiscount(),
-                (product.getPriceDiscount() * reservation.getQuantity()), //총 금액
-                product.getPickupStartDateTime(),
-                product.getPickupEndDateTime(),
-                reservation.getStatus().name(),
-                reservation.getCreatedAt()
-        );
+        return reservationRepository.findByIdAndProductStoreId(reservationId, storeId);
     }
 }
