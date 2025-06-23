@@ -17,7 +17,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     @Query("SELECT r.id AS id, r.product.name AS productName, r.product.priceDiscount AS discountPrice," +
             "r.quantity AS quantity, (r.product.priceDiscount * r.quantity) AS totalPrice, r.status AS status, r.createdAt AS createdAt " +
-            "FROM Reservation r JOIN r.product WHERE r.product.store.id = :storeId")
+            "FROM Reservation r JOIN r.product " +
+            "WHERE r.product.store.id = :storeId AND r.status IN ('CONFIRMED', 'COMPLETED')")
     List<ReservationProjection> findAllByStoreId(@Param("storeId") Long storeId);
 
     @EntityGraph(attributePaths = {"product", "user"})

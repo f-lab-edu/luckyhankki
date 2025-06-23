@@ -109,11 +109,15 @@ class ReservationTest {
     @Test
     @DisplayName("가게에 등록된 모든 예약 내역 조회")
     public void findAllByStoreId() {
-        getReservation();
+        Reservation reservation1 = getReservation();
+        Reservation reservation2 = getReservation();
+        reservation2.setStatus(ReservationStatus.CANCELLED);
 
         List<ReservationProjection> reservations = reservationRepository.findAllByStoreId(store.getId());
 
         assertThat(reservations).isNotEmpty();
+        assertThat(reservations).hasSize(1);
+        assertThat(reservations.get(0).getStatus()).isEqualTo("CONFIRMED");
         assertThat(reservations.get(0).getProductName()).isEqualTo(product.getName());
         assertThat(reservations.get(0).getQuantity()).isEqualTo(2);
     }

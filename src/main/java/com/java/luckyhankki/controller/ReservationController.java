@@ -63,7 +63,8 @@ public class ReservationController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @Operation(summary = "가게에 들어온 예약 목록 조회", description = "가게 ID에 해당하는 예약 목록을 조회합니다.")
+    @Operation(summary = "가게에 들어온 예약 목록 조회",
+            description = "가게 ID에 해당하는 예약 목록을 조회합니다. 예약 상태가 CONFIRMED와 COMPLETED만 조회합니다.")
     @GetMapping("/stores/{storeId}")
     public ResponseEntity<List<ReservationProjection>> getReservationListByStore(
             @Parameter(description = "가게 ID") @PathVariable Long storeId) {
