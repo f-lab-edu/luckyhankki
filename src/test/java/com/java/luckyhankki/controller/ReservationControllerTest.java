@@ -1,6 +1,7 @@
 package com.java.luckyhankki.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.java.luckyhankki.domain.reservation.ReservationProjection;
 import com.java.luckyhankki.domain.reservation.ReservationStatus;
 import com.java.luckyhankki.dto.reservation.ReservationRequest;
 import com.java.luckyhankki.dto.reservation.ReservationResponse;
@@ -13,10 +14,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -65,5 +68,31 @@ class ReservationControllerTest {
                 .andExpect(status().isOk());
 
         verify(service).cancelUserReservation(userId, reservationId);
+    }
+
+    @Test
+    @DisplayName("가게 예약 목록 조회 웹 테스트")
+    void getStoreReservation() throws Exception {
+        Long storeId = 1L;
+        ReservationProjection mockProjection = new ReservationProjection() {
+            @Override public Long getId() { return 1L; }
+            @Override public String getProductName() { return "소금빵"; }
+            @Override public Integer getDiscountPrice() { return 3000; }
+            @Override public Integer getQuantity() { return 2; }
+            @Override public Integer getTotalPrice() { return 6000; }
+            @Override public String getStatus() { return "CONFIRMED"; }
+            @Override public LocalDateTime getCreatedAt() { return LocalDateTime.now(); }
+        };
+
+        given(service.getStoreReservations(storeId))
+                .willReturn(List.of(mockProjection));
+
+        mockMvc.perform(get("/reservations/stores/{storeId}", storeId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1L))
+                .andExpect(jsonPath("$[0].productName").value("소금빵"))
+                .andDo(print());
+
+        verify(service).getStoreReservations(storeId);
     }
 }

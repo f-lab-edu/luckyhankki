@@ -47,6 +47,7 @@ class ReservationTest {
 
     private User user;
     private Product product;
+    private Store store;
 
     @BeforeEach
     void setUp() {
@@ -60,7 +61,7 @@ class ReservationTest {
         Seller seller = new Seller("1234567890", "김사장", "abc#@123", "ceo@test.com");
         seller = sellerRepository.save(seller);
 
-        Store store = new Store(seller, "길동국밥", "031-111-2222",
+        store = new Store(seller, "길동국밥", "031-111-2222",
                 "경기도 수원시 YY구 YY동", BigDecimal.valueOf(37.777666), BigDecimal.valueOf(126.777666));
         store = storeRepository.save(store);
 
@@ -102,6 +103,17 @@ class ReservationTest {
         Reservation findReservation = reservationRepository.findByIdAndUserId(reservation.getId(), user.getId());
 
         assertThat(findReservation).isNotNull();
+    }
+
+    @Test
+    public void findAllByStoreId() {
+        getReservation();
+
+        List<ReservationProjection> reservations = reservationRepository.findAllByStoreId(store.getId());
+
+        assertThat(reservations).isNotEmpty();
+        assertThat(reservations.get(0).getProductName()).isEqualTo(product.getName());
+        assertThat(reservations.get(0).getQuantity()).isEqualTo(2);
     }
 
     private Reservation getReservation() {

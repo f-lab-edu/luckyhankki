@@ -3,6 +3,7 @@ package com.java.luckyhankki.service;
 import com.java.luckyhankki.domain.product.Product;
 import com.java.luckyhankki.domain.product.ProductRepository;
 import com.java.luckyhankki.domain.reservation.Reservation;
+import com.java.luckyhankki.domain.reservation.ReservationProjection;
 import com.java.luckyhankki.domain.reservation.ReservationRepository;
 import com.java.luckyhankki.domain.reservation.ReservationStatus;
 import com.java.luckyhankki.domain.user.User;
@@ -79,6 +80,9 @@ public class ReservationService {
                 reservation.getCreatedAt());
     }
 
+    /**
+     * 사용자 예약 취소
+     */
     public void cancelUserReservation(Long userId, Long reservationId) {
         Reservation reservation = reservationRepository.findByIdAndUserId(userId, reservationId);
         Product product = reservation.getProduct();
@@ -90,4 +94,13 @@ public class ReservationService {
         reservation.setStatus(ReservationStatus.CANCELLED);
         product.increaseStock(reservation.getQuantity()); //재고 증가
     }
+
+    /**
+     * 가게 ID에 해당하는 모든 예약 목록 조회
+     */
+    @Transactional(readOnly = true)
+    public List<ReservationProjection> getStoreReservations(Long storeId) {
+        return reservationRepository.findAllByStoreId(storeId);
+    }
+
 }

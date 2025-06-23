@@ -4,6 +4,7 @@ import com.java.luckyhankki.domain.category.Category;
 import com.java.luckyhankki.domain.product.Product;
 import com.java.luckyhankki.domain.product.ProductRepository;
 import com.java.luckyhankki.domain.reservation.Reservation;
+import com.java.luckyhankki.domain.reservation.ReservationProjection;
 import com.java.luckyhankki.domain.reservation.ReservationRepository;
 import com.java.luckyhankki.domain.reservation.ReservationStatus;
 import com.java.luckyhankki.domain.store.Store;
@@ -27,6 +28,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -134,4 +136,30 @@ class ReservationServiceTest {
         verify(reservationRepository).findByIdAndUserId(reservationId, userId);
     }
 
+    @Test
+    @DisplayName("가게 예약 목록 조회 성공")
+    void getStoreReservations_success() {
+        // given
+        Long storeId = 1L;
+        ReservationProjection mockProjection = new ReservationProjection() {
+            @Override public Long getId() { return 1L; }
+            @Override public String getProductName() { return "소금빵"; }
+            @Override public Integer getDiscountPrice() { return 3000; }
+            @Override public Integer getQuantity() { return 2; }
+            @Override public Integer getTotalPrice() { return 6000; }
+            @Override public String getStatus() { return "CONFIRMED"; }
+            @Override public LocalDateTime getCreatedAt() { return LocalDateTime.now(); }
+        };
+
+        given(reservationRepository.findAllByStoreId(storeId))
+                .willReturn(List.of(mockProjection));
+
+        // when
+        List<ReservationProjection> result = service.getStoreReservations(storeId);
+
+        // then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getProductName()).isEqualTo("소금빵");
+        assertThat(result.get(0).getTotalPrice()).isEqualTo(6000);
+    }
 }

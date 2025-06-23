@@ -1,5 +1,6 @@
 package com.java.luckyhankki.controller;
 
+import com.java.luckyhankki.domain.reservation.ReservationProjection;
 import com.java.luckyhankki.dto.reservation.ReservationDetailResponse;
 import com.java.luckyhankki.dto.reservation.ReservationListResponse;
 import com.java.luckyhankki.dto.reservation.ReservationRequest;
@@ -63,5 +64,15 @@ public class ReservationController {
         service.cancelUserReservation(userId, reservationId);
 
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @Operation(summary = "가게에 들어온 예약 목록 조회", description = "가게 ID에 해당하는 예약 목록을 조회합니다.")
+    @GetMapping("/stores/{storeId}")
+    public ResponseEntity<List<ReservationProjection>> getStoreReservations(
+            @Parameter(description = "가게 ID") @PathVariable Long storeId) {
+
+        List<ReservationProjection> storeReservations = service.getStoreReservations(storeId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(storeReservations);
     }
 }
