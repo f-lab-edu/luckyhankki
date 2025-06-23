@@ -74,4 +74,8 @@ public class Reservation {
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
+
+    public void setStatus(ReservationStatus status) {
+        this.status = status;
+    }
 }
