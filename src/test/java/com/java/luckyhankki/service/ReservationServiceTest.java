@@ -203,4 +203,23 @@ class ReservationServiceTest {
 
         verify(reservationRepository).findByIdAndProductStoreId(reservationId, storeId);
     }
+
+    @Test
+    @DisplayName("픽업 완료 테스트")
+    void updateStatusCompleted() {
+        long reservationId = 1L;
+
+        User user = mock(User.class);
+        Product product = mock(Product.class);
+
+        Reservation reservation = new Reservation(user, product, 2);
+        when(reservationRepository.findById(reservationId))
+                .thenReturn(Optional.of(reservation));
+
+        service.updateStatusCompleted(reservationId);
+
+        assertThat(reservation.getStatus()).isEqualTo(ReservationStatus.COMPLETED);
+
+        verify(reservationRepository).findById(reservationId);
+    }
 }

@@ -108,4 +108,14 @@ public class ReservationService {
     public StoreReservationDetailResponse getReservationDetailsByStore(Long reservationId, Long storeId) {
         return reservationRepository.findByIdAndProductStoreId(reservationId, storeId);
     }
+
+    /**
+     * 픽업 처리
+     */
+    public void updateStatusCompleted(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("해당 예약 내역이 존재하지 않습니다."));
+
+        reservation.setStatus(ReservationStatus.COMPLETED);
+    }
 }

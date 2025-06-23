@@ -84,4 +84,14 @@ public class ReservationController {
 
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
+
+    @Operation(summary = "픽업 완료 처리", description = "사용자가 픽업하러 오면 가게는 예약 완료 처리를 합니다.")
+    @PutMapping("/{reservationId}")
+    public ResponseEntity<Void> updateStatusCompleted(
+            @Parameter(description = "예약 ID") @PathVariable Long reservationId) {
+
+        service.updateStatusCompleted(reservationId);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 }

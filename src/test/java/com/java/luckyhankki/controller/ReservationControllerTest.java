@@ -128,4 +128,15 @@ class ReservationControllerTest {
 
         verify(service).getReservationDetailsByStore(reservationId, storeId);
     }
+
+    @Test
+    @DisplayName("픽업 완료 처리 웹 테스트")
+    void updateStatusCompleted() throws Exception {
+        Long reservationId = 1L;
+
+        mockMvc.perform(put("/reservations/{reservationId}", reservationId))
+                .andExpect(status().isNoContent());
+
+        verify(service).updateStatusCompleted(reservationId);
+    }
 }
