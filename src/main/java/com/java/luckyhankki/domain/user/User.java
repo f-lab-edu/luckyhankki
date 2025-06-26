@@ -135,12 +135,6 @@ public class User {
         return isDeleted;
     }
 
-    /**
-     * 비밀번호 암호화 메소드
-     * TODO 추후에 PasswordEncoer 사용해서 암호화 처리
-     *
-     * @param password          평문으로 된 비밀번호
-     */
     public void changePassword(String password) {
         this.password = password;
     }

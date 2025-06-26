@@ -2,9 +2,10 @@ package com.java.luckyhankki.service;
 
 import com.java.luckyhankki.domain.user.User;
 import com.java.luckyhankki.domain.user.UserRepository;
-import com.java.luckyhankki.dto.UserRequest;
-import com.java.luckyhankki.dto.UserRegisterResponse;
+import com.java.luckyhankki.dto.user.UserRegisterResponse;
+import com.java.luckyhankki.dto.user.UserRequest;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,9 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository repository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository repository) {
+    public UserService(UserRepository repository, PasswordEncoder passwordEncoder) {
         this.repository = repository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public UserRegisterResponse registerUser(UserRequest request) {
@@ -31,7 +34,7 @@ public class UserService {
                 request.longitude(),
                 request.latitude()
         );
-        user.changePassword(request.password());
+        user.changePassword(passwordEncoder.encode(request.password()));
 
         try {
             User savedUser = repository.save(user);
