@@ -4,6 +4,7 @@ import com.java.luckyhankki.domain.seller.Seller;
 import com.java.luckyhankki.domain.seller.SellerRepository;
 import com.java.luckyhankki.dto.SellerRequest;
 import com.java.luckyhankki.dto.SellerResponse;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,14 +12,16 @@ import org.springframework.transaction.annotation.Transactional;
 public class SellerService {
 
     private final SellerRepository repository;
+    private final PasswordEncoder passwordEncoder;
 
-    public SellerService(SellerRepository repository) {
+    public SellerService(SellerRepository repository, PasswordEncoder passwordEncoder) {
         this.repository = repository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
      * 판매자 회원가입
-     * TODO 비밀번호 암호화, Exception 만들기
+     * TODO Exception 만들기
      */
     @Transactional
     public SellerResponse join(SellerRequest request) {
@@ -27,6 +30,7 @@ public class SellerService {
         }
 
         Seller seller = new Seller(request.businessNumber(), request.name(), request.password(), request.email());
+        seller.changePassword(passwordEncoder.encode(request.password()));
 
         Seller savedSeller = repository.save(seller);
 
@@ -36,5 +40,4 @@ public class SellerService {
                 savedSeller.getEmail()
         );
     }
-
 }
