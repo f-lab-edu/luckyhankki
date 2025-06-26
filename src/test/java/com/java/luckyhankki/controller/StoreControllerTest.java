@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -21,6 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -28,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(StoreController.class)
+@WithMockUser(username = "test", roles = "SELLER")
 class StoreControllerTest {
 
     @Autowired
@@ -67,7 +70,8 @@ class StoreControllerTest {
 
         mockMvc.perform(post("/stores?sellerId=1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(storeRequest)))
+                        .content(objectMapper.writeValueAsString(storeRequest))
+                        .with(csrf()))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.name").value("가게명1"))
@@ -92,7 +96,8 @@ class StoreControllerTest {
         given(storeService.findStore(any(Long.class)))
                 .willReturn(storeResponse);
 
-        mockMvc.perform(get("/stores/{sellerId}", 1))
+        mockMvc.perform(get("/stores/{sellerId}", 1)
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.name").value("가게명1"))
@@ -114,7 +119,8 @@ class StoreControllerTest {
         given(productService.getAllProductsByStore(storeId, null))
                 .willReturn(products);
 
-        mockMvc.perform(get("/stores/{storeId}/products", storeId))
+        mockMvc.perform(get("/stores/{storeId}/products", storeId)
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size()").value(2))
                 .andDo(print());

@@ -4,10 +4,13 @@ import com.java.luckyhankki.domain.seller.Seller;
 import com.java.luckyhankki.domain.seller.SellerRepository;
 import com.java.luckyhankki.dto.SellerRequest;
 import com.java.luckyhankki.dto.SellerResponse;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -16,15 +19,17 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class SellerServiceTest {
 
-    private SellerRepository sellerRepository = Mockito.mock(SellerRepository.class);
-    private SellerService sellerService;
+    @Mock
+    private SellerRepository sellerRepository;
 
-    @BeforeEach
-    void setUp() {
-        sellerService = new SellerService(sellerRepository);
-    }
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @InjectMocks
+    private SellerService sellerService;
 
     @Test
     @DisplayName("판매자 회원가입 성공")

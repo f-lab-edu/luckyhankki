@@ -1,8 +1,9 @@
 package com.java.luckyhankki.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.java.luckyhankki.dto.UserRegisterResponse;
-import com.java.luckyhankki.dto.UserRequest;
+import com.java.luckyhankki.dto.user.UserRegisterResponse;
+import com.java.luckyhankki.dto.user.UserRequest;
+import com.java.luckyhankki.service.AuthService;
 import com.java.luckyhankki.service.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -17,12 +19,14 @@ import java.time.LocalDateTime;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UserController.class)
+@WithMockUser(username = "test", roles = "CUSTOMER")
 class UserControllerTest {
 
     @Autowired
@@ -30,6 +34,9 @@ class UserControllerTest {
 
     @MockBean
     private UserService userService;
+
+    @MockBean
+    private AuthService authService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -60,7 +67,8 @@ class UserControllerTest {
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))
+                        .with(csrf()))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value(request.name()))
                 .andExpect(jsonPath("$.email").value(request.email()))

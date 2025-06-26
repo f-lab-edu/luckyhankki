@@ -3,6 +3,7 @@ package com.java.luckyhankki.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.java.luckyhankki.dto.SellerRequest;
 import com.java.luckyhankki.dto.SellerResponse;
+import com.java.luckyhankki.service.AuthService;
 import com.java.luckyhankki.service.SellerService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,15 +11,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(SellerController.class)
+@WithMockUser(username = "test", roles = "SELLER")
 class SellerControllerTest {
 
     @Autowired
@@ -26,6 +30,9 @@ class SellerControllerTest {
 
     @MockBean
     private SellerService sellerService;
+
+    @MockBean
+    private AuthService authService;
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -46,7 +53,8 @@ class SellerControllerTest {
         // when & then
         mockMvc.perform(post("/sellers")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))
+                        .with(csrf()))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.businessNumber").value("1234567890"))
                 .andExpect(jsonPath("$.name").value("홍길동"))
