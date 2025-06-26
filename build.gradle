@@ -44,6 +44,16 @@ test {
 	useJUnitPlatform()
 }
 
+def generated = 'src/main/generated'
+
+tasks.withType(JavaCompile).configureEach {
+	options.getGeneratedSourceOutputDirectory().set(file(generated))
+}
+
+sourceSets {
+	main.java.srcDirs += [ generated ]
+}
+
 clean {
-	delete file('src/main/generated')
+	delete file(generated)
 }
