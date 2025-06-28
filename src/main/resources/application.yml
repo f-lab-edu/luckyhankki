@@ -2,10 +2,20 @@ spring:
   config:
     import: optional:file:.env[.properties]
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: ${MYSQL_URL}
-    username: ${MYSQL_USER}
-    password: ${MYSQL_PASSWORD}
+    source:
+      hikari:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: ${MYSQL_SOURCE_URL}
+        username: ${MYSQL_USER}
+        password: ${MYSQL_PASSWORD}
+        read-only: false
+    replica:
+      hikari:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: ${MYSQL_REPLICA_URL}
+        username: ${MYSQL_USER}
+        password: ${MYSQL_PASSWORD}
+        read-only: true
   sql:
     init:
       mode: always

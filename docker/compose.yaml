@@ -1,20 +1,41 @@
 services:
-  db:
-    image: mysql:9.3.0
+  db-source:
+    build:
+      context: ./
+      dockerfile: source/Dockerfile
     container_name: luckyhankki-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: lucky@!77
       MYSQL_DATABASE: lucky_hankki
     ports:
       - "13306:3306"
     volumes:
-      - db-data:/var/lib/mysql
+      - source:/var/lib/mysql
+      - ./source/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-plucky@!77" ]
       interval: 10s  # 헬스체크 간격
       timeout: 5s    # 각 ping 요청이 응답 없을 때까지 기다리는 최대 시간
       retries: 3     # 실패를 3번 반복하면 unhealthy로 간주
       start_period: 15s
 
+  db-replica:
+    build:
+      context: ./
+      dockerfile: replica/Dockerfile
+    container_name: luckyhankki-mysql-replica
+    environment:
+      MYSQL_ROOT_PASSWORD: lucky@!77
+      MYSQL_DATABASE: lucky_hankki
+    ports:
+      - "13307:3306"
+    volumes:
+      - replica:/var/lib/mysql
+      - ./replica/init.sql:/docker-entrypoint-initdb.d/init.sql
+    depends_on:
+      db-source:
+        condition: service_healthy
+
 volumes:
-  db-data:
+  source:
+  replica:
