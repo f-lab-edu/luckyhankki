@@ -1,0 +1,7 @@
+CHANGE REPLICATION SOURCE TO
+    SOURCE_HOST='db-source',
+    SOURCE_USER='repl',
+    SOURCE_PASSWORD='lucky@!77',
+    SOURCE_SSL=1,            -- SSL 사용
+    SOURCE_AUTO_POSITION=1;  -- GTID 기반 복제 활성화
+START REPLICA;
