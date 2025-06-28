@@ -6,16 +6,17 @@ import com.java.luckyhankki.domain.product.Product;
 import com.java.luckyhankki.domain.product.ProductRepository;
 import com.java.luckyhankki.domain.store.Store;
 import com.java.luckyhankki.domain.store.StoreRepository;
-import com.java.luckyhankki.dto.ProductDetailResponse;
-import com.java.luckyhankki.dto.ProductRequest;
-import com.java.luckyhankki.dto.ProductResponse;
-import com.java.luckyhankki.dto.ProductUpdateRequest;
+import com.java.luckyhankki.dto.product.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -177,6 +178,32 @@ class ProductServiceTest {
         assertEquals(1, result.size());
 
         verify(productRepository).findAllByStoreIdAndIsActiveTrue(storeId);
+    }
+
+    @Test
+    @DisplayName("조회 조건에 따른 활성화된 상품 목록 조회")
+    void searchProductsByCondition_success() {
+        ProductSearchCondition condition = new ProductSearchCondition(
+                null,
+                ProductSearchCondition.PickupDateFilter.TODAY,
+                null,
+                ProductSearchCondition.SortType.PRICE);
+        Pageable pageable = PageRequest.of(0, 10);
+
+        List<ProductResponse> responseList = getProductResponses(true);
+        Slice<ProductResponse> slice = new SliceImpl<>(responseList, pageable, false);
+
+        when(productRepository.findAllByCondition(condition, pageable)).thenReturn(slice);
+
+        Slice<ProductResponse> result = service.searchProductsByCondition(condition, pageable);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(1);
+
+        ProductResponse product = result.getContent().get(0);
+        assertThat(product.storeName()).isEqualTo("가게1");
+
+        verify(productRepository).findAllByCondition(condition, pageable);
     }
 
     @Test
