@@ -222,4 +222,35 @@ public class Product {
             consumer.accept(newValue);
         }
     }
+
+    @Override
+    public String toString() {
+        return """
+            Product {
+                id                 = %d
+                name               = '%s'
+                priceOriginal      = %d
+                priceDiscount      = %d
+                stock              = %d
+                description        = '%s'
+                pickupStartDateTime= %s
+                pickupEndDateTime  = %s
+                isActive           = %s
+                createdAt          = %s
+                updatedAt          = %s
+            }
+            """.formatted(
+                id,
+                name,
+                priceOriginal,
+                priceDiscount,
+                stock,
+                description,
+                pickupStartDateTime,
+                pickupEndDateTime,
+                isActive,
+                createdAt,
+                updatedAt
+        );
+    }
 }

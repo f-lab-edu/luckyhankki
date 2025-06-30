@@ -78,4 +78,10 @@ public class Reservation {
     public void setStatus(ReservationStatus status) {
         this.status = status;
     }
+
+    @Override
+    public String toString() {
+        return "Reservation{id=%d, quantity=%d, status=%s, createdAt=%s, updatedAt=%s}"
+                .formatted(id, quantity, status, createdAt, updatedAt);
+    }
 }

@@ -58,7 +58,7 @@ public class ReservationController {
             @Parameter(description = "사용자 ID") @PathVariable Long userId,
             @Parameter(description = "예약 ID") @PathVariable Long reservationId) {
 
-        service.cancelReservationByUser(userId, reservationId);
+        service.cancelReservationByUser(reservationId, userId);
 
         return ResponseEntity.status(HttpStatus.OK).build();
     }

@@ -9,6 +9,8 @@ import com.java.luckyhankki.domain.reservation.ReservationStatus;
 import com.java.luckyhankki.domain.user.User;
 import com.java.luckyhankki.domain.user.UserRepository;
 import com.java.luckyhankki.dto.reservation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,7 @@ import java.util.List;
 @Transactional
 public class ReservationService {
 
+    private static final Logger log = LoggerFactory.getLogger(ReservationService.class);
     private final ReservationRepository reservationRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
@@ -65,7 +68,7 @@ public class ReservationService {
      */
     @Transactional(readOnly = true)
     public ReservationDetailResponse getReservationByUser(Long userId, Long reservationId) {
-        Reservation reservation = reservationRepository.findByIdAndUserId(reservationId, userId);
+        Reservation reservation = reservationRepository.findByIdAndUserIdWithProduct(reservationId, userId);
         Product product = reservation.getProduct();
 
         return new ReservationDetailResponse(product.getName(),
@@ -81,16 +84,23 @@ public class ReservationService {
     /**
      * 사용자 예약 취소
      */
-    public void cancelReservationByUser(Long userId, Long reservationId) {
-        Reservation reservation = reservationRepository.findByIdAndUserId(userId, reservationId);
-        Product product = reservation.getProduct();
-
+    public void cancelReservationByUser(Long reservationId, Long userId) {
+        Reservation reservation = reservationRepository.findByIdAndUserId(reservationId, userId);
+        log.info("[cancelReservationByUser] reservationId: {}, userId: {}", reservationId, userId);
         if (reservation.getStatus() == ReservationStatus.CANCELLED || reservation.getStatus() == ReservationStatus.COMPLETED) {
             throw new RuntimeException("해당 예약건은 취소가 불가능합니다.");
         }
 
         reservation.setStatus(ReservationStatus.CANCELLED);
-        product.increaseStock(reservation.getQuantity()); //재고 증가
+
+        //비관적 락으로 상품 조회
+        Product product = productRepository.findByIdWithLock(reservation.getProduct().getId())
+                .orElseThrow(() -> new RuntimeException("해당 상품이 존재하지 않습니다."));
+        log.info("[cancelReservationByUser] before increase productStock: {}", product.getStock());
+
+        //재고 증가
+        product.increaseStock(reservation.getQuantity());
+        log.info("[cancelReservationByUser] after increase productStock: {}", product.getStock());
     }
 
     /**

@@ -4,6 +4,7 @@ import com.java.luckyhankki.domain.category.Category;
 import com.java.luckyhankki.domain.category.CategoryRepository;
 import com.java.luckyhankki.domain.product.Product;
 import com.java.luckyhankki.domain.product.ProductRepository;
+import com.java.luckyhankki.domain.reservation.Reservation;
 import com.java.luckyhankki.domain.reservation.ReservationRepository;
 import com.java.luckyhankki.domain.seller.Seller;
 import com.java.luckyhankki.domain.seller.SellerRepository;
@@ -167,6 +168,72 @@ public class ReservationIntegrationTest {
         assertThat(updated.getStock()).isEqualTo(0);
         assertThat(successCount.get()).isEqualTo(1);
         assertThat(failureCount.get()).isEqualTo(9);
+    }
+
+    @Test
+    @DisplayName("동일 상품 예약 5건 동시 취소 - 수량 2 * 예약건 5 = 재고 10")
+    void cancelMultipleReservationsTest() throws InterruptedException {
+        int threadCount = 5;
+        int quantityPerReservation = 2;
+        int initialStock = 10;
+
+        // 초기 재고 설정
+        Product product = productRepository.findById(productId).orElseThrow();
+        product.setStock(initialStock);
+        productRepository.saveAndFlush(product);
+
+        // 예약 여러 건 생성
+        Long[] reservationIds = new Long[threadCount];
+        Long[] userIds = new Long[threadCount];
+        for (int i = 0; i < threadCount; i++) {
+            User user = new User("test"+i+"@test.com",
+                    "홍길동",
+                    "01011112222",
+                    "경기도 수원시",
+                    BigDecimal.valueOf(37.123456),
+                    BigDecimal.valueOf(126.123456));
+            user.changePassword("test");
+            userRepository.saveAndFlush(user);
+            userIds[i] = user.getId();
+
+            Reservation reservation = new Reservation(user, product, quantityPerReservation);
+            reservation = reservationRepository.saveAndFlush(reservation);
+
+            product.decreaseStock(quantityPerReservation);
+            reservationIds[i] = reservation.getId();
+        }
+        productRepository.saveAndFlush(product);
+
+        AtomicInteger successCount = new AtomicInteger();
+        AtomicInteger failureCount = new AtomicInteger();
+
+        ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+        CountDownLatch latch = new CountDownLatch(threadCount);
+
+        for (int i = 0; i < threadCount; i++) {
+            long reservationId = reservationIds[i];
+            long userId = userIds[i];
+            executorService.submit(() -> {
+                try {
+                    reservationService.cancelReservationByUser(reservationId, userId);
+                    successCount.incrementAndGet();
+                } catch (Exception e) {
+                    System.err.println("Cancel reservation failed: " + e.getMessage());
+                    failureCount.incrementAndGet();
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        latch.await();
+        executorService.shutdown();
+
+        Product updatedProduct = productRepository.findById(productId).orElseThrow();
+
+        assertThat(updatedProduct.getStock()).isEqualTo(initialStock);
+        assertThat(successCount.get()).isEqualTo(threadCount);
+        assertThat(failureCount.get()).isEqualTo(0);
     }
 
     /**

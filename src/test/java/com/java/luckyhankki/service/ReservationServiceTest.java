@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -122,7 +124,7 @@ class ReservationServiceTest {
         when(product.getName()).thenReturn("비빔밥");
 
         Reservation reservation = new Reservation(user, product, 2);
-        when(reservationRepository.findByIdAndUserId(reservationId, userId))
+        when(reservationRepository.findByIdAndUserIdWithProduct(reservationId, userId))
                 .thenReturn(reservation);
 
         ReservationDetailResponse result = service.getReservationByUser(userId, reservationId);
@@ -130,7 +132,7 @@ class ReservationServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.productName()).isEqualTo("비빔밥");
 
-        verify(reservationRepository).findByIdAndUserId(reservationId, userId);
+        verify(reservationRepository).findByIdAndUserIdWithProduct(reservationId, userId);
     }
 
     @Test
@@ -221,5 +223,74 @@ class ReservationServiceTest {
         assertThat(reservation.getStatus()).isEqualTo(ReservationStatus.COMPLETED);
 
         verify(reservationRepository).findById(reservationId);
+    }
+
+    @Test
+    @DisplayName("예약 취소 성공")
+    void cancelReservation_success() {
+        // given
+        long userId = 1L;
+        long reservationId = 1L;
+        int originalStock = 10;
+        int reservedQuantity = 3;
+
+        User user = mock(User.class);
+        Store store = mock(Store.class);
+        Category category = mock(Category.class);
+
+        Product product = new Product(
+                store,
+                category,
+                "비빔밥",
+                10000,
+                8000,
+                originalStock,
+                "육회비빔밥 입니다.",
+                LocalDateTime.now().plusHours(1),
+                LocalDateTime.now().plusHours(2)
+        );
+        product.decreaseStock(reservedQuantity);
+
+        Reservation reservation = new Reservation(user, product, reservedQuantity);
+
+        when(reservationRepository.findByIdAndUserId(reservationId, userId)).thenReturn(reservation);
+        when(productRepository.findByIdWithLock(product.getId())).thenReturn(Optional.of(product));
+
+        // when
+        service.cancelReservationByUser(reservationId, userId);
+
+        // then
+        assertThat(reservation.getStatus()).isEqualTo(ReservationStatus.CANCELLED);
+        assertThat(product.getStock()).isEqualTo(originalStock);
+
+        verify(reservationRepository).findByIdAndUserId(reservationId, userId);
+        verify(productRepository).findByIdWithLock(product.getId());
+    }
+
+    @Test
+    @DisplayName("예약 취소 실패 - 예약 상태가 CANCELLED일 때 예외 발생")
+    void cancelReservation_throwsException_whenStatusIsCancelled() {
+        // given
+        long userId = 1L;
+        long reservationId = 1L;
+        int reservedQuantity = 3;
+
+        User user = mock(User.class);
+        Product product = mock(Product.class);
+
+        Reservation reservation = new Reservation(user, product, reservedQuantity);
+        reservation.setStatus(ReservationStatus.CANCELLED);
+
+        when(reservationRepository.findByIdAndUserId(reservationId, userId)).thenReturn(reservation);
+
+        //when
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            service.cancelReservationByUser(reservationId, userId);
+        });
+
+        // then
+        assertEquals("해당 예약건은 취소가 불가능합니다.", exception.getMessage());
+
+        verify(reservationRepository).findByIdAndUserId(reservationId, userId);
     }
 }
