@@ -201,6 +201,15 @@ public class Product {
     }
 
     /**
+     * 재고 증가 메소드
+     *
+     * @param quantity 사용자가 선택한 수량
+     */
+    public void increaseStock(int quantity) {
+        this.stock += quantity;
+    }
+
+    /**
      * 필드 업데이트 내부 메소드
      *
      * @param consumer     Product의 setter 메서드 참조
@@ -212,5 +221,36 @@ public class Product {
         if (newValue != null && !newValue.equals(currentValue)) {
             consumer.accept(newValue);
         }
+    }
+
+    @Override
+    public String toString() {
+        return """
+            Product {
+                id                 = %d
+                name               = '%s'
+                priceOriginal      = %d
+                priceDiscount      = %d
+                stock              = %d
+                description        = '%s'
+                pickupStartDateTime= %s
+                pickupEndDateTime  = %s
+                isActive           = %s
+                createdAt          = %s
+                updatedAt          = %s
+            }
+            """.formatted(
+                id,
+                name,
+                priceOriginal,
+                priceDiscount,
+                stock,
+                description,
+                pickupStartDateTime,
+                pickupEndDateTime,
+                isActive,
+                createdAt,
+                updatedAt
+        );
     }
 }
