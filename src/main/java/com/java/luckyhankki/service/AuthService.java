@@ -1,16 +1,16 @@
 package com.java.luckyhankki.service;
 
 import com.java.luckyhankki.config.security.JwtTokenProvider;
-import com.java.luckyhankki.dto.LoginResult;
+import com.java.luckyhankki.dto.common.LoginResult;
 import com.java.luckyhankki.dto.seller.SellerLoginRequest;
 import com.java.luckyhankki.dto.user.UserLoginRequest;
-import org.springframework.http.HttpStatus;
+import com.java.luckyhankki.exception.CustomException;
+import com.java.luckyhankki.exception.ErrorCode;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 /**
  * 사용자 인증 서비스
@@ -40,7 +40,7 @@ public class AuthService {
     public LoginResult userLogin(UserLoginRequest request) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.email());
         if (!passwordEncoder.matches(request.password(), userDetails.getPassword())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "아이디 또는 비밀번호가 잘못되었습니다.");
+            throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
         }
 
         return getToken(userDetails);
@@ -56,7 +56,7 @@ public class AuthService {
     public LoginResult sellerLogin(SellerLoginRequest request) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.businessNumber());
         if (!passwordEncoder.matches(request.password(), userDetails.getPassword())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "아이디 또는 비밀번호가 잘못되었습니다.");
+            throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
         }
 
         return getToken(userDetails);

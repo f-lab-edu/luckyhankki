@@ -1,6 +1,8 @@
 package com.java.luckyhankki.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.java.luckyhankki.dto.common.ErrorResponse;
+import com.java.luckyhankki.exception.ErrorCode;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -12,26 +14,17 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 @Component
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(CustomAccessDeniedHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(CustomAccessDeniedHandler.class);
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
-        LOGGER.error("[CustomAccessDeniedHandler] No Authorities", accessDeniedException);
-        LOGGER.error("[CustomAccessDeniedHandler] Request URI: {}", request.getRequestURI());
-
+        log.error("[CustomAccessDeniedHandler] 권한 없음: {}, 요청 URI: {}", accessDeniedException, request.getRequestURI());
         ObjectMapper objectMapper = new ObjectMapper();
-
-        // Map으로 응답 데이터 구성
-        Map<String, Object> responseBody = new HashMap<>();
-        responseBody.put("status", "error");
-        responseBody.put("message", "접근 권한이 없습니다.");
-        responseBody.put("data", null);
+        ErrorResponse errorResponse = new ErrorResponse(ErrorCode.FORBIDDEN_USER);
 
         // HTTP 응답 설정
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
@@ -39,6 +32,6 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         response.setCharacterEncoding("UTF-8");
 
         // ObjectMapper로 JSON 직렬화
-        objectMapper.writeValue(response.getWriter(), responseBody);
+        objectMapper.writeValue(response.getWriter(), errorResponse);
     }
 }

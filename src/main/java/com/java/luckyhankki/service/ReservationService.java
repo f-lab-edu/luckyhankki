@@ -8,11 +8,12 @@ import com.java.luckyhankki.domain.user.User;
 import com.java.luckyhankki.domain.user.UserRepository;
 import com.java.luckyhankki.dto.reservation.ReservationRequest;
 import com.java.luckyhankki.dto.reservation.ReservationResponse;
+import com.java.luckyhankki.exception.CustomException;
+import com.java.luckyhankki.exception.ErrorCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
@@ -25,10 +26,11 @@ public class ReservationService {
         this.userRepository = userRepository;
     }
 
+    @Transactional
     public ReservationResponse reserveProduct(ReservationRequest request) {
         User user = userRepository.getReferenceById(request.userId());
         Product product = productRepository.findByIdWithLock(request.productId())
-                .orElseThrow(() -> new RuntimeException("해당 상품이 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
 
         int quantity = request.quantity();
         product.decreaseStock(quantity); //재고 차감

@@ -5,8 +5,10 @@ import com.java.luckyhankki.domain.seller.SellerRepository;
 import com.java.luckyhankki.domain.store.Store;
 import com.java.luckyhankki.domain.store.StoreProjection;
 import com.java.luckyhankki.domain.store.StoreRepository;
-import com.java.luckyhankki.dto.StoreRequest;
-import com.java.luckyhankki.dto.StoreResponse;
+import com.java.luckyhankki.dto.store.StoreRequest;
+import com.java.luckyhankki.dto.store.StoreResponse;
+import com.java.luckyhankki.exception.CustomException;
+import com.java.luckyhankki.exception.ErrorCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,11 +26,11 @@ public class StoreService {
 
     public StoreResponse registerStore(Long sellerId, StoreRequest request) {
         Seller seller = sellerRepository.findById(sellerId)
-                .orElseThrow(() -> new IllegalArgumentException("Seller not found: " + sellerId));
+                .orElseThrow(() -> new CustomException(ErrorCode.SELLER_NOT_FOUND));
 
         //만약 seller가 이미 가게 등록을 한 상태라면 하나 이상의 가게는 등록할 수 없다고 exception
         if (storeRepository.existsStoreBySellerId(sellerId)) {
-            throw new RuntimeException("이미 등록된 가게가 있습니다.");
+            throw new CustomException(ErrorCode.STORE_ALREADY_EXISTS);
         }
 
         Store store = new Store(
@@ -53,7 +55,7 @@ public class StoreService {
     @Transactional(readOnly = true)
     public StoreResponse findStore(Long sellerId) {
         StoreProjection store = storeRepository.findStoreBySellerId(sellerId)
-                .orElseThrow(() -> new RuntimeException("아직 가게가 등록되지 않았습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND));
 
         return new StoreResponse(
                 store.getId(),
