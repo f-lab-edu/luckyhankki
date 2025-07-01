@@ -1,6 +1,6 @@
 package com.java.luckyhankki.controller;
 
-import com.java.luckyhankki.dto.LoginResult;
+import com.java.luckyhankki.dto.common.LoginResult;
 import com.java.luckyhankki.dto.user.UserLoginRequest;
 import com.java.luckyhankki.dto.user.UserRegisterResponse;
 import com.java.luckyhankki.dto.user.UserRequest;

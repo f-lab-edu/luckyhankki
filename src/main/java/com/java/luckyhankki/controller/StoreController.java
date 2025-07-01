@@ -1,8 +1,8 @@
 package com.java.luckyhankki.controller;
 
 import com.java.luckyhankki.dto.product.ProductResponse;
-import com.java.luckyhankki.dto.StoreRequest;
-import com.java.luckyhankki.dto.StoreResponse;
+import com.java.luckyhankki.dto.store.StoreRequest;
+import com.java.luckyhankki.dto.store.StoreResponse;
 import com.java.luckyhankki.service.ProductService;
 import com.java.luckyhankki.service.StoreService;
 import io.swagger.v3.oas.annotations.Operation;
