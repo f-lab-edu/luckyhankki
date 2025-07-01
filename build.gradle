@@ -6,6 +6,7 @@ plugins {
 
 group = 'com.java'
 version = '0.0.1-SNAPSHOT'
+def queryDslVersion = '6.11'
 
 java {
 	toolchain {
@@ -39,8 +40,27 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+
+	//QueryDSL
+	implementation("io.github.openfeign.querydsl:querydsl-core:${queryDslVersion}")
+	implementation("io.github.openfeign.querydsl:querydsl-jpa:$queryDslVersion")
+	annotationProcessor("io.github.openfeign.querydsl:querydsl-apt:$queryDslVersion:jpa")
 }
 
 test {
 	useJUnitPlatform()
+}
+
+def generated = 'src/main/generated'
+
+tasks.withType(JavaCompile).configureEach {
+	options.getGeneratedSourceOutputDirectory().set(file(generated))
+}
+
+sourceSets {
+	main.java.srcDirs += [ generated ]
+}
+
+clean {
+	delete file(generated)
 }

@@ -1,10 +1,7 @@
 package com.java.luckyhankki.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.java.luckyhankki.dto.ProductDetailResponse;
-import com.java.luckyhankki.dto.ProductRequest;
-import com.java.luckyhankki.dto.ProductResponse;
-import com.java.luckyhankki.dto.ProductUpdateRequest;
+import com.java.luckyhankki.dto.product.*;
 import com.java.luckyhankki.service.ProductService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -204,6 +201,53 @@ class ProductControllerTest {
                 .andDo(print());
 
         verify(productService).getAllProducts(any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("조회 조건에 따라 해당되는 모든 상품 조회 웹 테스트")
+    void searchProductsByCondition() throws Exception {
+        ProductResponse productResponse1 = new ProductResponse(
+                1L,
+                "가게A",
+                "음식",
+                "비빔밥",
+                10000,
+                8000,
+                4,
+                LocalDateTime.now().plusHours(3),
+                LocalDateTime.now().plusHours(6)
+        );
+        ProductResponse productResponse2 = new ProductResponse(
+                2L,
+                "가게B",
+                "베이커리",
+                "랜덤빵박스",
+                25000,
+                20000,
+                2,
+                LocalDateTime.now().plusHours(1),
+                LocalDateTime.now().plusHours(9)
+        );
+
+        ProductSearchCondition condition = new ProductSearchCondition(null, null, null, null);
+
+        List<ProductResponse> content = List.of(productResponse1, productResponse2);
+        Pageable pageable = PageRequest.of(0, 2);
+        Slice<ProductResponse> slice = new SliceImpl<>(content, pageable, true);
+
+        given(productService.searchProductsByCondition(any(ProductSearchCondition.class), any(Pageable.class))).willReturn(slice);
+
+        mockMvc.perform(get("/products/condition")
+                        .content(objectMapper.writeValueAsString(condition))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].storeName").value(productResponse1.storeName()))
+                .andExpect(jsonPath("$.content[1].name").value(productResponse2.name()))
+                .andExpect(jsonPath("$.first").value(true))
+                .andExpect(jsonPath("$.size").value(2))
+                .andDo(print());
+
+        verify(productService).searchProductsByCondition(any(ProductSearchCondition.class), any(Pageable.class));
     }
 
     @Test

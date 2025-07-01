@@ -6,12 +6,11 @@ import com.java.luckyhankki.domain.product.Product;
 import com.java.luckyhankki.domain.product.ProductRepository;
 import com.java.luckyhankki.domain.store.Store;
 import com.java.luckyhankki.domain.store.StoreRepository;
-import com.java.luckyhankki.dto.ProductDetailResponse;
-import com.java.luckyhankki.dto.ProductRequest;
-import com.java.luckyhankki.dto.ProductResponse;
-import com.java.luckyhankki.dto.ProductUpdateRequest;
+import com.java.luckyhankki.dto.product.*;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -117,7 +116,36 @@ public class ProductService {
      */
     @Transactional(readOnly = true)
     public Slice<ProductResponse> getAllProducts(Pageable pageable) {
+        if (pageable.getSort().isUnsorted()) {
+            pageable = PageRequest.of(
+                    pageable.getPageNumber(),
+                    pageable.getPageSize(),
+                    Sort.by(Sort.Direction.ASC, "priceDiscount")
+            );
+        }
+
         Slice<ProductResponse> products = productRepository.findAllByIsActiveTrue(pageable);
+
+        return products.map(product -> new ProductResponse(
+                product.id(),
+                product.storeName(),
+                product.categoryName(),
+                product.name(),
+                product.priceOriginal(),
+                product.priceDiscount(),
+                product.stock(),
+                product.pickupStartDateTime(),
+                product.pickupEndDateTime()
+        ));
+    }
+
+    /**
+     * 고객이 조회 조건에 따른 상품 목록을 조회
+     */
+    @Transactional(readOnly = true)
+    public Slice<ProductResponse> searchProductsByCondition(ProductSearchCondition condition, Pageable pageable) {
+        Slice<ProductResponse> products = productRepository.findAllByCondition(condition, pageable);
+
         return products.map(product -> new ProductResponse(
                 product.id(),
                 product.storeName(),
