@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
@@ -22,12 +23,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ProductController.class)
+@WithMockUser(username = "test", roles = "SELLER")
 class ProductControllerTest {
 
     @Autowired
@@ -72,7 +75,8 @@ class ProductControllerTest {
         mockMvc.perform(post("/products")
                         .param("storeId", storeId.toString())
                         .content(objectMapper.writeValueAsString(productRequest))
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value(product.name()))
                 .andDo(print());
@@ -98,7 +102,8 @@ class ProductControllerTest {
         mockMvc.perform(post("/products")
                         .param("storeId", Long.toString(storeId))
                         .content(objectMapper.writeValueAsString(invalidRequest))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
                 .andExpect(status().isBadRequest());
     }
 
@@ -120,7 +125,8 @@ class ProductControllerTest {
         mockMvc.perform(post("/products")
                         .param("storeId", Long.toString(storeId))
                         .content(objectMapper.writeValueAsString(invalidRequest))
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
                 .andExpect(status().isBadRequest());
     }
 
@@ -261,8 +267,9 @@ class ProductControllerTest {
 
         mockMvc.perform(put("/products/{productId}", productId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(productUpdateRequest)))
-                        .andExpect(status().isNoContent())
+                        .content(objectMapper.writeValueAsString(productUpdateRequest))
+                        .with(csrf()))
+                .andExpect(status().isNoContent())
                 .andDo(print());
 
         verify(productService).updateProduct(eq(productId), any(ProductUpdateRequest.class));
@@ -273,7 +280,8 @@ class ProductControllerTest {
     void deleteProduct() throws Exception {
         Long productId = 1L;
 
-        mockMvc.perform(delete("/products/{productId}", productId))
+        mockMvc.perform(delete("/products/{productId}", productId)
+                        .with(csrf()))
                 .andExpect(status().isOk());
 
         verify(productService).deleteProduct(eq(productId));

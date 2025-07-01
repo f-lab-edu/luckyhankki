@@ -20,7 +20,6 @@ spring:
     init:
       mode: always
 
-
   jpa:
     database-platform: org.hibernate.dialect.MySQLDialect
     open-in-view: false
@@ -31,6 +30,8 @@ spring:
       hibernate.format_sql: true
     defer-datasource-initialization: true
 
+  jwt:
+    secret: 4387a92f94766c7597a1d8d353f8514f0c120376ddd59110f64687e33e0f2981
 
 logging:
   level:

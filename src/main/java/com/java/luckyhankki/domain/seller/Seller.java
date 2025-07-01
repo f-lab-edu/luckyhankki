@@ -3,8 +3,10 @@ package com.java.luckyhankki.domain.seller;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Table(indexes = {@Index(name = "unq_seller_businessnumber", columnList = "businessNumber", unique = true)})
@@ -37,6 +39,9 @@ public class Seller {
     @UpdateTimestamp
     @Column(insertable = false)
     private LocalDateTime updatedAt;
+
+    @Transient
+    private Set<SimpleGrantedAuthority> grantedAuthority = Set.of(new SimpleGrantedAuthority("ROLE_SELLER"));
 
     protected Seller() {}
 
@@ -78,5 +83,13 @@ public class Seller {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public void changePassword(String password) {
+        this.password = password;
+    }
+
+    public Set<SimpleGrantedAuthority> getGrantedAuthority() {
+        return grantedAuthority;
     }
 }
