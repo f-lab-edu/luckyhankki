@@ -2,6 +2,7 @@ package com.java.luckyhankki.service;
 
 import com.java.luckyhankki.domain.category.Category;
 import com.java.luckyhankki.domain.category.CategoryRepository;
+import com.java.luckyhankki.exception.CustomException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -44,9 +45,9 @@ class CategoryServiceTest {
 
         when(repository.save(any(Category.class))).thenThrow(DataIntegrityViolationException.class);
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> service.registerCategory(category));
+        CustomException exception = assertThrows(CustomException.class, () -> service.registerCategory(category));
 
-        assertEquals("이미 존재하는 카테고리명입니다.", exception.getMessage());
+        assertEquals("이미 존재하는 카테고리 명입니다.", exception.getMessage());
         verify(repository).save(any());
     }
 
@@ -83,7 +84,9 @@ class CategoryServiceTest {
     void getCategoryById_throwsException_whenCategoryIdNotExist() {
         when(repository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> service.getCategoryById(1L));
+        CustomException exception = assertThrows(CustomException.class, () -> service.getCategoryById(1L));
+        assertEquals("CATEGORY_NOT_FOUND", exception.getErrorCode().getCode());
+        assertEquals("존재하지 않는 카테고리입니다.", exception.getErrorCode().getMessage());
         verify(repository).findById(1L);
     }
 

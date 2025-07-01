@@ -104,7 +104,10 @@ class ProductControllerTest {
                         .content(objectMapper.writeValueAsString(invalidRequest))
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(csrf()))
-                .andExpect(status().isBadRequest());
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.message").value("유효성 검사에 실패했습니다."))
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andDo(print());
     }
 
     @Test
@@ -127,7 +130,11 @@ class ProductControllerTest {
                         .content(objectMapper.writeValueAsString(invalidRequest))
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(csrf()))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.message").value("유효성 검사에 실패했습니다."))
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andDo(print());
     }
 
     @Test
