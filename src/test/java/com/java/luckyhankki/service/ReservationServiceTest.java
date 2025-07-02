@@ -12,6 +12,7 @@ import com.java.luckyhankki.domain.user.User;
 import com.java.luckyhankki.domain.user.UserRepository;
 import com.java.luckyhankki.dto.reservation.*;
 import com.java.luckyhankki.exception.CustomException;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
