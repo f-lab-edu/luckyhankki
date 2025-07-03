@@ -32,7 +32,7 @@ INSERT IGNORE INTO product (
 )
 VALUES (
     1, 1, '1인럭키세트', 28000, 10000, 2,
-    '길동국밥의 시그니처 국밥과 럭키반찬들로 이루어진 구성품입니다,', '2025-06-14 19:00:00', '2025-06-14 23:00:00',
+    '길동국밥의 시그니처 국밥과 럭키반찬들로 이루어진 구성품입니다,', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL 3 HOUR,
     1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 );
 

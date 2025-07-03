@@ -2,12 +2,14 @@ package com.java.luckyhankki.domain.product;
 
 import com.java.luckyhankki.dto.product.ProductResponse;
 import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,4 +27,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, Product
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT p FROM Product p WHERE p.id = :id")
     Optional<Product> findByIdWithLock(Long id);
+
+    //픽업 시간이 경과되고 활성화 상태의 상품만 모두 조회
+    Page<Product> findAllByPickupEndDateTimeBeforeAndIsActiveTrue(LocalDateTime now, Pageable pageable);
 }
