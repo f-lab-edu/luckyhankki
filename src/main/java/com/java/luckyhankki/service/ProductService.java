@@ -7,6 +7,8 @@ import com.java.luckyhankki.domain.product.ProductRepository;
 import com.java.luckyhankki.domain.store.Store;
 import com.java.luckyhankki.domain.store.StoreRepository;
 import com.java.luckyhankki.dto.product.*;
+import com.java.luckyhankki.exception.CustomException;
+import com.java.luckyhankki.exception.ErrorCode;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -18,7 +20,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@Transactional
 public class ProductService {
 
     private final ProductRepository productRepository;
@@ -31,24 +32,25 @@ public class ProductService {
         this.categoryRepository = categoryRepository;
     }
 
+    @Transactional
     public ProductResponse addProduct(Long storeId, ProductRequest request) {
         if (request.priceDiscount() > request.priceOriginal()) {
-            throw new RuntimeException("할인된 가격은 원가보다 클 수 없습니다.");
+            throw new CustomException(ErrorCode.INVALID_PRICE_DISCOUNT);
         }
 
         LocalDateTime pickupStartDateTime = request.pickupStartDateTime();
         LocalDateTime pickupEndDateTime = request.pickupEndDateTime();
 
         if (pickupStartDateTime.isAfter(pickupEndDateTime)) {
-            throw new RuntimeException("픽업 시작 시간은 픽업 종료 시간보다 늦을 수 없습니다.");
+            throw new CustomException(ErrorCode.INVALID_PICKUP_TIME_RANGE);
         }
 
         //가게 승인이 된 상태여야 상품 등록 가능
         Store store = storeRepository.findByIdAndIsApprovedTrue(storeId)
-                .orElseThrow(() -> new RuntimeException("아직 승인되지 않은 가게입니다. 관리자 승인 후 상품 등록이 가능합니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_APPROVED));
 
         Category category = categoryRepository.findById(request.categoryId())
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 카테고리입니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
 
         Product product = new Product(
                 store,
@@ -94,7 +96,7 @@ public class ProductService {
     @Transactional(readOnly = true)
     public ProductDetailResponse getProduct(Long productId) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("해당 상품이 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
 
         return new ProductDetailResponse(
                 product.getStore().getName(),
@@ -159,19 +161,21 @@ public class ProductService {
         ));
     }
 
+    @Transactional
     public void updateProduct(Long productId, ProductUpdateRequest request) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("해당 상품이 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
 
         if (request.categoryId() != null) {
             Category category = categoryRepository.findById(request.categoryId())
-                    .orElseThrow(() -> new RuntimeException("존재하지 않는 카테고리입니다."));
+                    .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
             product.changeCategory(category);
         }
 
         product.updateProduct(request);
     }
 
+    @Transactional
     public void deleteProduct(Long productId) {
         //if 예약건이 없는 경우
         productRepository.deleteById(productId);

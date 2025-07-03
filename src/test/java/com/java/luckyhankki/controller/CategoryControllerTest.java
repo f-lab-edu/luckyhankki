@@ -2,6 +2,8 @@ package com.java.luckyhankki.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.java.luckyhankki.domain.category.Category;
+import com.java.luckyhankki.exception.CustomException;
+import com.java.luckyhankki.exception.ErrorCode;
 import com.java.luckyhankki.service.CategoryService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -94,6 +96,25 @@ class CategoryControllerTest {
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value(category.getName()));
+    }
+
+    @Test
+    @DisplayName("카테고리 조회 실패 웹 테스트")
+    void getCategoryById_throwsException() throws Exception {
+        Category category = new Category("음식점");
+
+        given(categoryService.registerCategory(any(Category.class)))
+                .willReturn(category);
+
+        createCategory(category);
+
+        given(categoryService.getCategoryById(1L))
+                .willThrow(new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
+
+        mockMvc.perform(get("/categories/{categoryId}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andDo(print());
     }
 
     private void createCategory(Category category) throws Exception {

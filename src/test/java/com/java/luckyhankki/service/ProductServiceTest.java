@@ -7,6 +7,7 @@ import com.java.luckyhankki.domain.product.ProductRepository;
 import com.java.luckyhankki.domain.store.Store;
 import com.java.luckyhankki.domain.store.StoreRepository;
 import com.java.luckyhankki.dto.product.*;
+import com.java.luckyhankki.exception.CustomException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -100,7 +101,8 @@ class ProductServiceTest {
                 LocalDateTime.now().plusHours(2)
         );
 
-        assertThrows(RuntimeException.class, () -> service.addProduct(storeId, request));
+        CustomException exception = assertThrows(CustomException.class, () -> service.addProduct(storeId, request));
+        assertEquals("할인된 가격은 원가보다 클 수 없습니다.", exception.getMessage());
     }
 
     @Test
@@ -121,7 +123,8 @@ class ProductServiceTest {
                 LocalDateTime.now().plusHours(2)
         );
 
-        assertThrows(RuntimeException.class, () -> service.addProduct(storeId, request));
+        CustomException exception = assertThrows(CustomException.class, () -> service.addProduct(storeId, request));
+        assertEquals("픽업 시작 시각은 픽업 종료 시간보다 늦을 수 없습니다.", exception.getMessage());
     }
 
     @Test
@@ -145,7 +148,10 @@ class ProductServiceTest {
         when(storeRepository.findByIdAndIsApprovedTrue(storeId))
                 .thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> service.addProduct(storeId, request));
+        CustomException exception = assertThrows(CustomException.class, () -> service.addProduct(storeId, request));
+        assertEquals("아직 승인되지 않은 가게입니다. 관리자 승인 후 상품 등록이 가능합니다.", exception.getMessage());
+
+        verify(storeRepository).findByIdAndIsApprovedTrue(storeId);
     }
 
     @Test

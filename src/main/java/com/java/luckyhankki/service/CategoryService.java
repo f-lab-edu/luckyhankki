@@ -2,6 +2,8 @@ package com.java.luckyhankki.service;
 
 import com.java.luckyhankki.domain.category.Category;
 import com.java.luckyhankki.domain.category.CategoryRepository;
+import com.java.luckyhankki.exception.CustomException;
+import com.java.luckyhankki.exception.ErrorCode;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-@Transactional
 public class CategoryService {
 
     private final CategoryRepository repository;
@@ -18,11 +19,12 @@ public class CategoryService {
         this.repository = repository;
     }
 
+    @Transactional
     public Category registerCategory(Category category) {
         try {
             return repository.save(category);
         } catch (DataIntegrityViolationException e) {
-            throw new RuntimeException("이미 존재하는 카테고리명입니다.");
+            throw new CustomException(ErrorCode.CATEGORY_ALREADY_EXISTS);
         }
     }
 
@@ -34,12 +36,13 @@ public class CategoryService {
     @Transactional(readOnly = true)
     public Category getCategoryById(long id) {
         return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("아이디에 해당되는 카테고리가 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
     }
 
+    @Transactional
     public void updateCategoryName(long id, String newName) {
         Category result = repository.findById(id)
-                                    .orElseThrow(() -> new IllegalArgumentException("Category not found: " + id));
+                .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
         result.changeName(newName);
     }
 }

@@ -1,8 +1,8 @@
 package com.java.luckyhankki.controller;
 
-import com.java.luckyhankki.dto.LoginResult;
-import com.java.luckyhankki.dto.SellerRequest;
-import com.java.luckyhankki.dto.SellerResponse;
+import com.java.luckyhankki.dto.common.LoginResult;
+import com.java.luckyhankki.dto.seller.SellerRequest;
+import com.java.luckyhankki.dto.seller.SellerResponse;
 import com.java.luckyhankki.dto.seller.SellerLoginRequest;
 import com.java.luckyhankki.service.AuthService;
 import com.java.luckyhankki.service.SellerService;

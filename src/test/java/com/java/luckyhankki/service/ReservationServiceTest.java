@@ -11,6 +11,8 @@ import com.java.luckyhankki.domain.store.Store;
 import com.java.luckyhankki.domain.user.User;
 import com.java.luckyhankki.domain.user.UserRepository;
 import com.java.luckyhankki.dto.reservation.*;
+import com.java.luckyhankki.exception.CustomException;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -284,7 +286,7 @@ class ReservationServiceTest {
         when(reservationRepository.findByIdAndUserId(reservationId, userId)).thenReturn(reservation);
 
         //when
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        CustomException exception = assertThrows(CustomException.class, () -> {
             service.cancelReservationByUser(reservationId, userId);
         });
 

@@ -2,15 +2,16 @@ package com.java.luckyhankki.service;
 
 import com.java.luckyhankki.domain.user.User;
 import com.java.luckyhankki.domain.user.UserRepository;
-import com.java.luckyhankki.dto.user.UserRegisterResponse;
 import com.java.luckyhankki.dto.user.UserRequest;
+import com.java.luckyhankki.dto.user.UserRegisterResponse;
+import com.java.luckyhankki.exception.CustomException;
+import com.java.luckyhankki.exception.ErrorCode;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional
 public class UserService {
 
     private final UserRepository repository;
@@ -21,9 +22,10 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    @Transactional
     public UserRegisterResponse registerUser(UserRequest request) {
         if (repository.existsByEmail(request.email())) {
-            throw new RuntimeException("이미 존재하는 이메일입니다.");
+            throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
         User user = new User(
@@ -47,7 +49,7 @@ public class UserService {
                     savedUser.getCreatedAt()
             );
         } catch (DataIntegrityViolationException e) {
-            throw new RuntimeException("이미 존재하는 이메일로 회원가입에 실패했습니다.");
+            throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
     }
 }

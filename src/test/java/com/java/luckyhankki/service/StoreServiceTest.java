@@ -4,8 +4,9 @@ import com.java.luckyhankki.domain.seller.Seller;
 import com.java.luckyhankki.domain.seller.SellerRepository;
 import com.java.luckyhankki.domain.store.Store;
 import com.java.luckyhankki.domain.store.StoreRepository;
-import com.java.luckyhankki.dto.StoreRequest;
-import com.java.luckyhankki.dto.StoreResponse;
+import com.java.luckyhankki.dto.store.StoreRequest;
+import com.java.luckyhankki.dto.store.StoreResponse;
+import com.java.luckyhankki.exception.CustomException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -68,7 +69,7 @@ class StoreServiceTest {
         when(storeRepository.existsStoreBySellerId(sellerId))
                 .thenReturn(true);
 
-        RuntimeException exception = assertThrows(RuntimeException.class,
+        CustomException exception = assertThrows(CustomException.class,
                 () -> storeService.registerStore(sellerId, storeRequest));
 
         assertEquals("이미 등록된 가게가 있습니다.", exception.getMessage());

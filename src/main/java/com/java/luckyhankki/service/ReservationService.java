@@ -9,6 +9,9 @@ import com.java.luckyhankki.domain.reservation.ReservationStatus;
 import com.java.luckyhankki.domain.user.User;
 import com.java.luckyhankki.domain.user.UserRepository;
 import com.java.luckyhankki.dto.reservation.*;
+import com.java.luckyhankki.exception.CustomException;
+import com.java.luckyhankki.exception.ErrorCode;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -17,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-@Transactional
 public class ReservationService {
 
     private static final Logger log = LoggerFactory.getLogger(ReservationService.class);
@@ -31,10 +33,11 @@ public class ReservationService {
         this.userRepository = userRepository;
     }
 
+    @Transactional
     public ReservationResponse reserveProduct(ReservationRequest request) {
         User user = userRepository.getReferenceById(request.userId());
         Product product = productRepository.findByIdWithLock(request.productId())
-                .orElseThrow(() -> new RuntimeException("해당 상품이 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
 
         int quantity = request.quantity();
         product.decreaseStock(quantity); //재고 차감
@@ -84,18 +87,19 @@ public class ReservationService {
     /**
      * 사용자 예약 취소
      */
+    @Transactional
     public void cancelReservationByUser(Long reservationId, Long userId) {
         Reservation reservation = reservationRepository.findByIdAndUserId(reservationId, userId);
         log.info("[cancelReservationByUser] reservationId: {}, userId: {}", reservationId, userId);
         if (reservation.getStatus() == ReservationStatus.CANCELLED || reservation.getStatus() == ReservationStatus.COMPLETED) {
-            throw new RuntimeException("해당 예약건은 취소가 불가능합니다.");
+            throw new CustomException(ErrorCode.RESERVATION_CANCEL_FAILED);
         }
 
         reservation.setStatus(ReservationStatus.CANCELLED);
 
         //비관적 락으로 상품 조회
         Product product = productRepository.findByIdWithLock(reservation.getProduct().getId())
-                .orElseThrow(() -> new RuntimeException("해당 상품이 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
         log.info("[cancelReservationByUser] before increase productStock: {}", product.getStock());
 
         //재고 증가
@@ -122,9 +126,10 @@ public class ReservationService {
     /**
      * 픽업 처리
      */
+    @Transactional
     public void updateStatusCompleted(Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new RuntimeException("해당 예약 내역이 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_NOT_FOUND));
 
         reservation.setStatus(ReservationStatus.COMPLETED);
     }
