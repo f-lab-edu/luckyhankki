@@ -20,10 +20,15 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
     private static final Logger log = LoggerFactory.getLogger(CustomAccessDeniedHandler.class);
 
+    private final ObjectMapper objectMapper;
+
+    public CustomAccessDeniedHandler(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
         log.error("[CustomAccessDeniedHandler] 권한 없음: {}, 요청 URI: {}", accessDeniedException, request.getRequestURI());
-        ObjectMapper objectMapper = new ObjectMapper();
         ErrorResponse errorResponse = new ErrorResponse(ErrorCode.FORBIDDEN_USER);
 
         // HTTP 응답 설정

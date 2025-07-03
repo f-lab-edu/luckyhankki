@@ -20,10 +20,15 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 
     private static final Logger log = LoggerFactory.getLogger(CustomAuthenticationEntryPoint.class);
 
+    private final ObjectMapper objectMapper;
+
+    public CustomAuthenticationEntryPoint(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         log.error("[CustomAuthenticationEntryPoint] 미인증: {}", authException.getMessage());
-        ObjectMapper objectMapper = new ObjectMapper();
         ErrorResponse errorResponse = new ErrorResponse(ErrorCode.UNAUTHORIZED_USER);
 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
