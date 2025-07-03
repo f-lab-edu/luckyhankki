@@ -1,8 +1,8 @@
 package com.java.luckyhankki.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.java.luckyhankki.dto.user.UserRegisterResponse;
-import com.java.luckyhankki.dto.user.UserRequest;
+import com.java.luckyhankki.dto.UserRegisterResponse;
+import com.java.luckyhankki.dto.UserRequest;
 import com.java.luckyhankki.service.AuthService;
 import com.java.luckyhankki.service.UserService;
 import org.junit.jupiter.api.DisplayName;

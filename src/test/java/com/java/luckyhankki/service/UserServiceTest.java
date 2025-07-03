@@ -2,8 +2,8 @@ package com.java.luckyhankki.service;
 
 import com.java.luckyhankki.domain.user.User;
 import com.java.luckyhankki.domain.user.UserRepository;
-import com.java.luckyhankki.dto.user.UserRegisterResponse;
-import com.java.luckyhankki.dto.user.UserRequest;
+import com.java.luckyhankki.dto.UserRegisterResponse;
+import com.java.luckyhankki.dto.UserRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
