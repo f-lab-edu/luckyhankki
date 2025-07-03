@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
@@ -20,7 +21,6 @@ import java.util.List;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
-
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -41,6 +41,7 @@ class ReservationControllerTest {
 
     @Test
     @DisplayName("상품 예약 웹 테스트")
+    @WithMockUser(roles = "CUSTOMER")
     void reserveProduct() throws Exception {
         ReservationRequest request = new ReservationRequest(1L, 1L, 2);
         ReservationResponse response = new ReservationResponse("럭키비빔밥세트", 2, ReservationStatus.CONFIRMED.name());
@@ -51,7 +52,8 @@ class ReservationControllerTest {
 
         mockMvc.perform(post("/reservations")
                         .content(objectMapper.writeValueAsString(request))
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.productName").value(response.productName()))
                 .andExpect(jsonPath("$.quantity").value(response.quantity()))
@@ -63,6 +65,7 @@ class ReservationControllerTest {
 
     @Test
     @DisplayName("상품 예약 취소 웹 테스트")
+    @WithMockUser(roles = "SELLER")
     void cancelReservationByUser() throws Exception {
         Long userId = 1L;
         Long reservationId = 1L;
