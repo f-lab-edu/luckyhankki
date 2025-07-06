@@ -9,14 +9,20 @@ import java.util.Set;
 
 public class CustomUserDetails implements UserDetails {
 
+    private final Long userId;
     private final String username;
     private final String password;
     private final Set<SimpleGrantedAuthority> grantedAuthority;
 
-    public CustomUserDetails(String username, String password, Set<SimpleGrantedAuthority> grantedAuthority) {
+    public CustomUserDetails(Long userId, String username, String password, Set<SimpleGrantedAuthority> grantedAuthority) {
+        this.userId = userId;
         this.username = username;
         this.password = password;
         this.grantedAuthority = grantedAuthority;
+    }
+
+    public Long getUserId() {
+        return userId;
     }
 
     @Override

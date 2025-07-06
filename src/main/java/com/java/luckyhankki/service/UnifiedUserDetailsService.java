@@ -39,12 +39,12 @@ public class UnifiedUserDetailsService implements UserDetailsService {
                     .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
             Set<SimpleGrantedAuthority> grantedAuthority = Set.of(new SimpleGrantedAuthority("ROLE_" + user.getRoleType().name()));
 
-            return new CustomUserDetails(user.getEmail(), user.getPassword(), grantedAuthority);
+            return new CustomUserDetails(user.getId(), user.getEmail(), user.getPassword(), grantedAuthority);
         } else {
             Seller seller = sellerRepository.findByBusinessNumber(username)
                     .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
 
-            return new CustomUserDetails(seller.getEmail(), seller.getPassword(), seller.getGrantedAuthority());
+            return new CustomUserDetails(seller.getId(), seller.getBusinessNumber(), seller.getPassword(), seller.getGrantedAuthority());
         }
     }
 }
