@@ -31,6 +31,7 @@ public enum ErrorCode {
     PRODUCT_NOT_FOUND(NOT_FOUND, "PRODUCT_NOT_FOUND", "존재하지 않는 상품입니다."),
     CATEGORY_NOT_FOUND(NOT_FOUND, "CATEGORY_NOT_FOUND", "존재하지 않는 카테고리입니다."),
     RESERVATION_NOT_FOUND(NOT_FOUND, "RESERVATION_NOT_FOUND", "예약 내역이 존재하지 않습니다."),
+    KEYWORD_NOT_FOUND(NOT_FOUND, "KEYWORD_NOT_FOUND", "존재하지 않는 키워드입니다."),
 
     /**
      * HttpStatus.CONFLICT : 409
