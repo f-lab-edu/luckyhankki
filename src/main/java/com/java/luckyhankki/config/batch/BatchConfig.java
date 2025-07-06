@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -27,6 +28,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+@Profile("!test")
 @Configuration
 @EnableBatchProcessing
 public class BatchConfig {
@@ -36,11 +38,16 @@ public class BatchConfig {
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
     private final ProductRepository productRepository;
+    private final DataSource dataSource;
 
-    public BatchConfig(JobRepository jobRepository, PlatformTransactionManager transactionManager, ProductRepository productRepository) {
+    public BatchConfig(JobRepository jobRepository,
+                       PlatformTransactionManager transactionManager,
+                       ProductRepository productRepository,
+                       @Qualifier("sourceDataSource") DataSource dataSource) {
         this.jobRepository = jobRepository;
         this.transactionManager = transactionManager;
         this.productRepository = productRepository;
+        this.dataSource = dataSource;
     }
 
     /**
@@ -60,8 +67,8 @@ public class BatchConfig {
     public Step batchStep() {
         return new StepBuilder("batchStep", jobRepository)
                 .<Product, Product> chunk(100, transactionManager)
-                .reader(reader(null)) //임의의 값을 호출 시점에 적용
-                .writer(writer(null))
+                .reader(reader(LocalDateTime.now())) //임의의 값을 호출 시점에 적용
+                .writer(writer())
                 .build();
     }
 
@@ -88,7 +95,7 @@ public class BatchConfig {
      * Source DB에 저장
      */
     @Bean
-    public JdbcBatchItemWriter<Product> writer(@Qualifier("sourceDataSource") DataSource dataSource) {
+    public JdbcBatchItemWriter<Product> writer() {
         return new JdbcBatchItemWriterBuilder<Product>()
                 .dataSource(dataSource)
                 .sql("UPDATE product SET is_active = false, updated_at = CURRENT_TIMESTAMP WHERE product_id = ?")
