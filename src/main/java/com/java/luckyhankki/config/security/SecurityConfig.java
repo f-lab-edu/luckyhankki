@@ -1,5 +1,6 @@
 package com.java.luckyhankki.config.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -30,9 +31,11 @@ public class SecurityConfig {
     };
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final ObjectMapper objectMapper;
 
-    public SecurityConfig(JwtTokenProvider jwtTokenProvider) {
+    public SecurityConfig(JwtTokenProvider jwtTokenProvider, ObjectMapper objectMapper) {
         this.jwtTokenProvider = jwtTokenProvider;
+        this.objectMapper = objectMapper;
     }
 
     @Bean
@@ -81,8 +84,8 @@ public class SecurityConfig {
                 //인증/인가 과정에서 예외가 발생하는 경우 사용할 핸들러 설정
                 .exceptionHandling((exceptionHandling) ->
                         exceptionHandling
-                                .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
-                                .accessDeniedHandler(new CustomAccessDeniedHandler()));
+                                .authenticationEntryPoint(new CustomAuthenticationEntryPoint(objectMapper))
+                                .accessDeniedHandler(new CustomAccessDeniedHandler(objectMapper)));
 
         return httpSecurity.build();
     }

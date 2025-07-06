@@ -2,8 +2,9 @@ package com.java.luckyhankki.service;
 
 import com.java.luckyhankki.domain.seller.Seller;
 import com.java.luckyhankki.domain.seller.SellerRepository;
-import com.java.luckyhankki.dto.SellerRequest;
-import com.java.luckyhankki.dto.SellerResponse;
+import com.java.luckyhankki.dto.seller.SellerRequest;
+import com.java.luckyhankki.dto.seller.SellerResponse;
+import com.java.luckyhankki.exception.CustomException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,7 +40,6 @@ class SellerServiceTest {
                 "1234567890", "홍길동", "admin1234", "test@test.com"
         );
 
-        //any() : 어떤 Seller 객체든 상관X
         when(sellerRepository.save(any(Seller.class)))
                 .then(returnsFirstArg());
 
@@ -51,7 +51,6 @@ class SellerServiceTest {
         assertEquals("홍길동", responseDto.name());
         assertEquals("test@test.com", responseDto.email());
 
-        //verify(): 테스트 대상 코드가 특정 메서드를 실제로 호출했는지 확인하는 데 사용
         verify(sellerRepository).save(any());
     }
 
@@ -67,11 +66,12 @@ class SellerServiceTest {
         when(sellerRepository.existsByBusinessNumber("1234567890")).thenReturn(true);
 
         // when & then
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        CustomException exception = assertThrows(CustomException.class, () -> {
             sellerService.join(requestDTO);
         });
 
         assertEquals("이미 존재하는 사업자등록번호입니다.", exception.getMessage());
+        assertEquals("BUSINESS_NUMBER_ALREADY_EXISTS", exception.getErrorCode().getCode());
 
         verify(sellerRepository).existsByBusinessNumber(any());
     }

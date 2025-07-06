@@ -2,8 +2,9 @@ package com.java.luckyhankki.service;
 
 import com.java.luckyhankki.domain.user.User;
 import com.java.luckyhankki.domain.user.UserRepository;
-import com.java.luckyhankki.dto.UserRegisterResponse;
-import com.java.luckyhankki.dto.UserRequest;
+import com.java.luckyhankki.dto.user.UserRequest;
+import com.java.luckyhankki.dto.user.UserRegisterResponse;
+import com.java.luckyhankki.exception.CustomException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -84,7 +85,7 @@ class UserServiceTest {
         when(userRepository.existsByEmail(request.email()))
                 .thenReturn(true);
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> userService.registerUser(request));
+        CustomException exception = assertThrows(CustomException.class, () -> userService.registerUser(request));
 
         assertEquals("이미 존재하는 이메일입니다.", exception.getMessage());
         verify(userRepository).existsByEmail(request.email());
