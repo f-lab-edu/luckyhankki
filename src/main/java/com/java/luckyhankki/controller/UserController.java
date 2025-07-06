@@ -2,8 +2,8 @@ package com.java.luckyhankki.controller;
 
 import com.java.luckyhankki.dto.common.LoginResult;
 import com.java.luckyhankki.dto.user.UserLoginRequest;
-import com.java.luckyhankki.dto.user.UserRegisterResponse;
-import com.java.luckyhankki.dto.user.UserRequest;
+import com.java.luckyhankki.dto.UserRegisterResponse;
+import com.java.luckyhankki.dto.UserRequest;
 import com.java.luckyhankki.service.AuthService;
 import com.java.luckyhankki.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;

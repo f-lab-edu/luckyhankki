@@ -61,11 +61,12 @@ public class SecurityConfig {
                                 .requestMatchers(POST, "/categories", "/stores").hasRole("ADMIN")
                                 .requestMatchers(PUT, "/categories/**").hasRole("ADMIN")
 
-                                .requestMatchers(GET, "/stores/*/products").hasRole("SELLER")
-                                .requestMatchers(POST, "/stores").hasRole("SELLER")
-                                .requestMatchers(PUT, "/stores/**").hasRole("SELLER")
-                                .requestMatchers(DELETE, "/stores/**").hasRole("SELLER")
+                                .requestMatchers(GET, "/stores/*/products", "/reservations/stores/**").hasAnyRole("SELLER", "ADMIN")
+                                .requestMatchers(POST, "/stores", "/products").hasRole("SELLER")
+                                .requestMatchers(PUT, "/stores/**", "/products/**", "/reservations/**").hasRole("SELLER")
+                                .requestMatchers(DELETE, "/stores/**", "/products/**").hasAnyRole("SELLER", "ADMIN")
 
+                                .requestMatchers(GET, "/reservations/**").hasAnyRole("CUSTOMER", "ADMIN")
                                 .requestMatchers(POST,"/reservations").hasRole("CUSTOMER")
 
                                 .requestMatchers(GET, WHITE_LIST_GET_URL).permitAll()
