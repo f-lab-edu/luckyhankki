@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
@@ -20,11 +21,13 @@ import java.util.List;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@WithMockUser
 @WebMvcTest(ReservationController.class)
 class ReservationControllerTest {
 
@@ -49,7 +52,8 @@ class ReservationControllerTest {
 
         mockMvc.perform(post("/reservations")
                         .content(objectMapper.writeValueAsString(request))
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.productName").value(response.productName()))
                 .andExpect(jsonPath("$.quantity").value(response.quantity()))
@@ -65,7 +69,8 @@ class ReservationControllerTest {
         Long userId = 1L;
         Long reservationId = 1L;
 
-        mockMvc.perform(delete("/reservations/{userId}/{reservationId}", userId, reservationId))
+        mockMvc.perform(delete("/reservations/{userId}/{reservationId}", userId, reservationId)
+                        .with(csrf()))
                 .andExpect(status().isOk());
 
         verify(service).cancelReservationByUser(userId, reservationId);
@@ -88,7 +93,8 @@ class ReservationControllerTest {
         given(service.getReservationListByStore(storeId))
                 .willReturn(List.of(mockProjection));
 
-        mockMvc.perform(get("/reservations/stores/{storeId}", storeId))
+        mockMvc.perform(get("/reservations/stores/{storeId}", storeId)
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1L))
                 .andExpect(jsonPath("$[0].productName").value("소금빵"))
@@ -120,7 +126,8 @@ class ReservationControllerTest {
         given(service.getReservationDetailsByStore(reservationId, storeId))
                 .willReturn(response);
 
-        mockMvc.perform(get("/reservations/stores/{storeId}/{reservationId}", storeId, reservationId))
+        mockMvc.perform(get("/reservations/stores/{storeId}/{reservationId}", storeId, reservationId)
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.productName").value("1인럭키세트"))
                 .andExpect(jsonPath("$.quantity").value(2))
@@ -134,7 +141,8 @@ class ReservationControllerTest {
     void updateStatusCompleted() throws Exception {
         Long reservationId = 1L;
 
-        mockMvc.perform(put("/reservations/{reservationId}", reservationId))
+        mockMvc.perform(put("/reservations/{reservationId}", reservationId)
+                        .with(csrf()))
                 .andExpect(status().isNoContent());
 
         verify(service).updateStatusCompleted(reservationId);
