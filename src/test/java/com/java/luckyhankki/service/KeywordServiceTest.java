@@ -69,7 +69,7 @@ class KeywordServiceTest {
     @DisplayName("키워드 수정 성공")
     void updateKeyword_success() {
         Keyword keyword = new Keyword("음식이 맛있어요");
-        when(repository.findById(any(Long.class)))
+        when(repository.findByIdWithLock(any(Long.class)))
                 .thenReturn(Optional.of(keyword));
 
         KeywordResponse response = service.updateKeyword(1L, new KeywordRequest("친절해요"));
@@ -80,7 +80,7 @@ class KeywordServiceTest {
     @Test
     @DisplayName("키워드 수정-키워드 미존재 시 예외 발생")
     void updateKeyword_throwsException_whenKeywordNotFound() {
-        when(repository.findById(any(Long.class)))
+        when(repository.findByIdWithLock(any(Long.class)))
                 .thenReturn(Optional.empty());
 
         CustomException exception = assertThrows(CustomException.class,
@@ -93,7 +93,7 @@ class KeywordServiceTest {
     @DisplayName("키워드 삭제 성공")
     void deleteKeyword_success() {
         Keyword keyword = new Keyword("음식이 맛있어요");
-        when(repository.findById(any(Long.class)))
+        when(repository.findByIdWithLock(any(Long.class)))
                 .thenReturn(Optional.of(keyword));
 
         service.deleteKeyword(1L);
@@ -104,7 +104,7 @@ class KeywordServiceTest {
     @Test
     @DisplayName("키워드 삭제-키워드 미존재 시 예외 발생")
     void deleteKeyword_throwsException_whenKeywordNotFound() {
-        when(repository.findById(any(Long.class)))
+        when(repository.findByIdWithLock(any(Long.class)))
                 .thenReturn(Optional.empty());
 
         CustomException exception = assertThrows(CustomException.class,
