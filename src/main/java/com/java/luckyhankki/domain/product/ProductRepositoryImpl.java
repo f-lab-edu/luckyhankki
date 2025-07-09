@@ -78,9 +78,12 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 
     /**
      * 픽업 날짜 조건 필터링
-     * - NOW : 현재 시각 기준
-     * - TODAY : 금일 00:00~23:59 사이에 픽업 가능한 상품
+     * - NOW : 현재 시각 기준으로 픽업 가능한 상품
+     * - TODAY : 금일 00:00 부터 23:55까지 픽업이 시작되는 상품
      * - TOMORROW : 명일 00:00 이후 픽업 가능한 상품
+     * <p>
+     * 픽업 종료 시간이 지난 상품은 별도 배치 처리로 비활성화되므로,
+     * pickupEndDateTime 조건은 생략함
      *
      * @param pickupDateFilter     날짜 필터 타입
      * @return BooleanExpression - 조건 또는 null
@@ -95,10 +98,8 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
         LocalDateTime tomorrow =  today.plusDays(1);
 
         return switch (pickupDateFilter) {
-            case NOW -> product.pickupStartDateTime.loe(now)
-                    .and(product.pickupEndDateTime.goe(now));
-            case TODAY -> product.pickupStartDateTime.loe(tomorrow.minusMinutes(1))
-                    .and(product.pickupEndDateTime.goe(today));
+            case NOW -> product.pickupStartDateTime.loe(now);
+            case TODAY -> product.pickupStartDateTime.loe(tomorrow.minusMinutes(5));
             case TOMORROW -> product.pickupStartDateTime.goe(tomorrow);
         };
     }
