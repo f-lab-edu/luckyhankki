@@ -268,10 +268,6 @@ class ProductControllerTest {
                         .content(objectMapper.writeValueAsString(condition))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.content[0].storeName").value(productResponse1.storeName()))
-//                .andExpect(jsonPath("$.content[1].name").value(productResponse2.name()))
-//                .andExpect(jsonPath("$.first").value(true))
-//                .andExpect(jsonPath("$.size").value(2))
                 .andDo(print());
 
         verify(productService).searchProductsByCondition(any(), any(), any());
