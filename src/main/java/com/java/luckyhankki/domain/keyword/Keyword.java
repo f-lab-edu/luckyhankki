@@ -3,13 +3,11 @@ package com.java.luckyhankki.domain.keyword;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
 @Entity
-@SQLRestriction("is_deleted = false")
 public class Keyword {
 
     @Id
@@ -31,6 +29,9 @@ public class Keyword {
     @UpdateTimestamp
     @Column(insertable = false)
     private LocalDateTime updatedAt;
+
+    @Version
+    private Integer version;
 
     protected Keyword() {}
 
@@ -59,6 +60,10 @@ public class Keyword {
         return updatedAt;
     }
 
+    public Integer getVersion() {
+        return version;
+    }
+
     /**
      * 키워드 변경 메소드
      */
@@ -77,7 +82,7 @@ public class Keyword {
 
     @Override
     public String toString() {
-        return "Keyword{id=%d, keyword='%s', isDeleted=%s, createdAt=%s, updatedAt=%s}"
-                .formatted(id, keyword, isDeleted, createdAt, updatedAt);
+        return "Keyword{id=%d, keyword='%s', isDeleted=%s, createdAt=%s, updatedAt=%s, version=%d}"
+                .formatted(id, keyword, isDeleted, createdAt, updatedAt, version);
     }
 }
