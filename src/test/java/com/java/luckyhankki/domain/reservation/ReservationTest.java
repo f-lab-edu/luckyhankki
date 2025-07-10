@@ -139,7 +139,8 @@ class ReservationTest {
         Reservation reservation = getReservation();
         reservation.setStatus(ReservationStatus.CONFIRMED);
 
-        ReservationStatusProjection statusProjection = reservationRepository.findByUserIdAndProductId(user.getId(), product.getId());
+        ReservationStatusProjection statusProjection =
+                reservationRepository.findByUserIdAndProductId(user.getId(), product.getId()).get();
         assertThat(statusProjection).isNotNull();
         assertThat(statusProjection.getStatus()).isEqualTo(ReservationStatus.CONFIRMED);
     }

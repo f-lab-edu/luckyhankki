@@ -57,7 +57,7 @@ public class ReviewServiceTest {
         Product product = Mockito.mock(Product.class);
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
         when(reservationRepository.findByUserIdAndProductId(userId, 1L))
-                .thenReturn(() -> ReservationStatus.COMPLETED);
+                .thenReturn(Optional.of(() -> ReservationStatus.COMPLETED));
 
         when(reviewRepository.save(any(Review.class)))
                 .then(returnsFirstArg());
@@ -78,7 +78,7 @@ public class ReviewServiceTest {
         Product product = Mockito.mock(Product.class);
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
         when(reservationRepository.findByUserIdAndProductId(userId, 1L))
-                .thenReturn(() -> ReservationStatus.PENDING);
+                .thenReturn(Optional.of(() -> ReservationStatus.PENDING));
 
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> reviewService.addReview(userId, reviewRequest));
