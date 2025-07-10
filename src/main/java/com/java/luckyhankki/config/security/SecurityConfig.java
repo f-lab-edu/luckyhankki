@@ -58,6 +58,7 @@ public class SecurityConfig {
                                 //Swagger 관련 URL
                                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
+                                .requestMatchers("/admins/**").hasRole("ADMIN")
                                 .requestMatchers(POST, "/categories", "/stores").hasRole("ADMIN")
                                 .requestMatchers(PUT, "/categories/**").hasRole("ADMIN")
 

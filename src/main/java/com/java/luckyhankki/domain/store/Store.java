@@ -1,5 +1,6 @@
 package com.java.luckyhankki.domain.store;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.java.luckyhankki.domain.seller.Seller;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -37,6 +38,7 @@ public class Store {
     @Column(nullable = false, precision = 10, scale = 6)
     private BigDecimal latitude;
 
+    @JsonProperty("isApproved")
     @Column(nullable = false)
     private boolean isApproved;
 
@@ -51,8 +53,9 @@ public class Store {
     @Column(insertable = false)
     private LocalDateTime updatedAt;
 
+    @JsonProperty("isActive")
     @Column(nullable = false)
-    private boolean isDeleted;
+    private boolean isActive;
 
     protected Store() {}
 
@@ -65,7 +68,7 @@ public class Store {
         this.latitude = latitude;
         this.isApproved = false;
         this.reportCount = 0;
-        this.isDeleted = false;
+        this.isActive = false;
     }
 
     public Long getId() {
@@ -116,7 +119,38 @@ public class Store {
         return updatedAt;
     }
 
-    public boolean isDeleted() {
-        return isDeleted;
+    public boolean isActive() {
+        return isActive;
+    }
+
+    /**
+     * 관리자가 가게를 승인하는 메소드
+     */
+    public void approveStore() {
+        this.isApproved = true;
+        this.isActive = true;
+    }
+
+    /**
+     * 경고 누적 처리
+     */
+    public void addReport() {
+        this.reportCount++;
+        if (this.reportCount >= 3) {
+            deactivate();
+        }
+    }
+
+    /**
+     * 경고 3회 누적 시 비활성화 처리
+     */
+    private void deactivate() {
+        this.isActive = false;
+    }
+
+    @Override
+    public String toString() {
+        return "Store{id=%d, name='%s', phone='%s', address='%s', longitude=%s, latitude=%s, isApproved=%s, reportCount=%d, createdAt=%s, updatedAt=%s, isDeleted=%s}"
+                .formatted(id, name, phone, address, longitude, latitude, isApproved, reportCount, createdAt, updatedAt, isActive);
     }
 }
