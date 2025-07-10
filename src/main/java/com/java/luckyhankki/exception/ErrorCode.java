@@ -31,6 +31,7 @@ public enum ErrorCode {
     PRODUCT_NOT_FOUND(NOT_FOUND, "PRODUCT_NOT_FOUND", "존재하지 않는 상품입니다."),
     CATEGORY_NOT_FOUND(NOT_FOUND, "CATEGORY_NOT_FOUND", "존재하지 않는 카테고리입니다."),
     RESERVATION_NOT_FOUND(NOT_FOUND, "RESERVATION_NOT_FOUND", "예약 내역이 존재하지 않습니다."),
+    KEYWORD_NOT_FOUND(NOT_FOUND, "KEYWORD_NOT_FOUND", "존재하지 않는 키워드입니다."),
 
     /**
      * HttpStatus.CONFLICT : 409
@@ -40,6 +41,9 @@ public enum ErrorCode {
     STORE_ALREADY_EXISTS(CONFLICT, "STORE_ALREADY_EXISTS", "이미 등록된 가게가 있습니다."),
     CATEGORY_ALREADY_EXISTS(CONFLICT, "CATEGORY_ALREADY_EXISTS", "이미 존재하는 카테고리 명입니다."),
     RESERVATION_CANCEL_FAILED(CONFLICT, "RESERVATION_CANCEL_FAILED", "해당 예약건은 취소가 불가능합니다."),
+    KEYWORD_ALREADY_EXISTS(CONFLICT, "KEYWORD_ALREADY_EXISTS", "이미 존재하는 키워드입니다."),
+    KEYWORD_ALREADY_DELETED(CONFLICT, "KEYWORD_ALREADY_DELETED", "이미 삭제된 키워드입니다."),
+    KEYWORD_UPDATE_CONFLICT(CONFLICT, "KEYWORD_UPDATE_CONFLICT", "잠시 후 다시 시도해 주세요. 키워드 수정 중 충돌이 발생했습니다."),
 
     /**
      * HttpStatus.INTERNAL_SERVER_ERROR : 500
