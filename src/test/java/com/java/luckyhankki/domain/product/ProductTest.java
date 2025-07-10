@@ -8,6 +8,8 @@ import com.java.luckyhankki.domain.store.Store;
 import com.java.luckyhankki.domain.store.StoreRepository;
 import com.java.luckyhankki.dto.product.ProductResponse;
 import com.java.luckyhankki.dto.product.ProductSearchCondition;
+import com.java.luckyhankki.dto.product.ProductSearchRequest;
+import com.java.luckyhankki.dto.product.ProductWithDistanceResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -140,12 +142,17 @@ class ProductTest {
                 categoryBakeryId,
                 ProductSearchCondition.PickupDateFilter.TODAY,
                 null,
-                ProductSearchCondition.SortType.PRICE);
+                ProductSearchCondition.SortType.DISTANCE);
 
+        double userLon = 126.976112;
+        double userLat = 37.586671;
+
+        ProductSearchRequest request = new ProductSearchRequest(condition, userLat, userLon);
         PageRequest pageRequest = PageRequest.of(0, 10);
-        Slice<ProductResponse> result = productRepository.findAllByCondition(condition, pageRequest);
+        Slice<ProductWithDistanceResponse> result = productRepository.findAllByCondition(request, pageRequest);
 
         assertThat(result.getContent()).hasSize(1);
-        assertThat(result.getContent()).extracting("name").containsExactly("소금빵");
+        assertThat(result.getContent().get(0).distance()).isBetween(BigDecimal.valueOf(2.23), BigDecimal.valueOf(2.25));
+        assertThat(result.getContent().get(0).product().name()).isEqualTo("소금빵");
     }
 }

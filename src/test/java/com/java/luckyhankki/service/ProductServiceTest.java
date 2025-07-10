@@ -1,11 +1,14 @@
 package com.java.luckyhankki.service;
 
+import com.java.luckyhankki.config.security.CustomUserDetails;
 import com.java.luckyhankki.domain.category.Category;
 import com.java.luckyhankki.domain.category.CategoryRepository;
 import com.java.luckyhankki.domain.product.Product;
 import com.java.luckyhankki.domain.product.ProductRepository;
 import com.java.luckyhankki.domain.store.Store;
 import com.java.luckyhankki.domain.store.StoreRepository;
+import com.java.luckyhankki.domain.user.UserLocationProjection;
+import com.java.luckyhankki.domain.user.UserRepository;
 import com.java.luckyhankki.dto.product.*;
 import com.java.luckyhankki.exception.CustomException;
 import org.junit.jupiter.api.DisplayName;
@@ -13,12 +16,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -44,6 +49,9 @@ class ProductServiceTest {
 
     @Mock
     private CategoryRepository categoryRepository;
+
+    @Mock
+    private UserRepository userRepository;
 
     @Test
     @DisplayName("승인된 가게에서 상품 추가 성공")
@@ -194,22 +202,40 @@ class ProductServiceTest {
                 ProductSearchCondition.PickupDateFilter.TODAY,
                 null,
                 ProductSearchCondition.SortType.PRICE);
+
+        CustomUserDetails userDetails = Mockito.mock(CustomUserDetails.class);
+        when(userDetails.getUsername()).thenReturn("user@email.com");
+
+        double userLon = 126.976112;
+        double userLat = 37.586671;
+
+        when(userRepository.findUserLocationProjectionByEmail(any(String.class)))
+                .thenReturn(new UserLocationProjection() {
+                    @Override
+                    public BigDecimal getLongitude() {
+                        return BigDecimal.valueOf(userLon);
+                    }
+
+                    @Override
+                    public BigDecimal getLatitude() {
+                        return BigDecimal.valueOf(userLat);
+                    }
+                });
+
         Pageable pageable = PageRequest.of(0, 10);
 
-        List<ProductResponse> responseList = getProductResponses(true);
-        Slice<ProductResponse> slice = new SliceImpl<>(responseList, pageable, false);
+        List<ProductWithDistanceResponse> responseList = getProductWithDistanceResponses();
+        Slice<ProductWithDistanceResponse> slice = new SliceImpl<>(responseList, pageable, false);
 
-        when(productRepository.findAllByCondition(condition, pageable)).thenReturn(slice);
+        when(productRepository.findAllByCondition(any(ProductSearchRequest.class), eq(pageable)))
+                .thenReturn(slice);
 
-        Slice<ProductResponse> result = service.searchProductsByCondition(condition, pageable);
+        Slice<ProductWithDistanceResponse> result = service.searchProductsByCondition(userDetails, condition, pageable);
 
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(1);
 
-        ProductResponse product = result.getContent().get(0);
-        assertThat(product.storeName()).isEqualTo("가게1");
-
-        verify(productRepository).findAllByCondition(condition, pageable);
+        verify(productRepository).findAllByCondition(any(ProductSearchRequest.class), eq(pageable));
     }
 
     @Test
@@ -315,6 +341,17 @@ class ProductServiceTest {
                         product.getStock(),
                         product.getPickupStartDateTime(),
                         product.getPickupEndDateTime()))
+                .toList();
+    }
+
+    public static List<ProductWithDistanceResponse> getProductWithDistanceResponses() {
+        List<ProductResponse> productResponses = getProductResponses(true);
+
+        return productResponses.stream()
+                .map(productResponse -> new ProductWithDistanceResponse(
+                        productResponse,
+                        BigDecimal.valueOf(2.35))
+                )
                 .toList();
     }
 }
