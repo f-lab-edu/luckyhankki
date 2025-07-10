@@ -33,6 +33,13 @@ spring:
   jwt:
     secret: 4387a92f94766c7597a1d8d353f8514f0c120376ddd59110f64687e33e0f2981
 
+  batch:
+    jdbc:
+      initialize-schema: always
+
 logging:
   level:
     org.hibernate.SQL: debug
+    org.springframework:
+      batch: debug
+      batch.core: debug
