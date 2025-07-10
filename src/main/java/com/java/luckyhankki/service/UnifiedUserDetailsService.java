@@ -40,12 +40,12 @@ public class UnifiedUserDetailsService implements UserDetailsService {
                     .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.UNAUTHORIZED_USER.getMessage()));
             Set<SimpleGrantedAuthority> grantedAuthority = Set.of(new SimpleGrantedAuthority("ROLE_" + user.getRoleType().name()));
 
-            return new CustomUserDetails(user.getEmail(), user.getPassword(), grantedAuthority);
+            return new CustomUserDetails(user.getId(), user.getEmail(), user.getPassword(), grantedAuthority);
         } else {
             Seller seller = sellerRepository.findByBusinessNumber(username)
                     .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.UNAUTHORIZED_USER.getMessage()));
 
-            return new CustomUserDetails(seller.getEmail(), seller.getPassword(), seller.getGrantedAuthority());
+            return new CustomUserDetails(seller.getId(), seller.getBusinessNumber(), seller.getPassword(), seller.getGrantedAuthority());
         }
     }
 }
