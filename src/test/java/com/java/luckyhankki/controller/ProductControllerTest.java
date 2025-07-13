@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.java.luckyhankki.config.security.CustomUserDetails;
 import com.java.luckyhankki.dto.product.*;
 import com.java.luckyhankki.service.ProductService;
+import com.java.luckyhankki.service.UnifiedUserDetailsService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,17 +16,21 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.test.context.support.TestExecutionEvent;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -32,7 +38,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ProductController.class)
-@WithMockUser(username = "test", roles = "SELLER")
+@WithUserDetails(
+        value = "test@test.com",
+        userDetailsServiceBeanName = "unifiedUserDetailsService",
+        setupBefore = TestExecutionEvent.TEST_EXECUTION
+)
 class ProductControllerTest {
 
     @Autowired
@@ -43,6 +53,22 @@ class ProductControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @MockBean(name = "unifiedUserDetailsService")
+    private UnifiedUserDetailsService unifiedUserDetailsService;
+
+    @BeforeEach
+    void setUp() {
+        CustomUserDetails mockUserDetails = new CustomUserDetails(
+                "test@test.com",
+                "password123@",
+                Set.of(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+
+        doReturn(mockUserDetails)
+                .when(unifiedUserDetailsService)
+                .loadUserByUsername("test@test.com");
+    }
 
     @Test
     @DisplayName("상품 추가 웹 테스트")
@@ -213,11 +239,8 @@ class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("조회 조건에 따라 해당되는 모든 상품 조회 웹 테스트")
+    @DisplayName("조회 조건에 따라 해당하는 모든 상품 조회 웹 테스트")
     void searchProductsByCondition() throws Exception {
-        CustomUserDetails userDetails = mock(CustomUserDetails.class);
-        when(userDetails.getUsername()).thenReturn("test@example.com"); // 필요 시 메서드 설정
-
         ProductResponse productResponse1 = new ProductResponse(
                 1L,
                 "가게A",
