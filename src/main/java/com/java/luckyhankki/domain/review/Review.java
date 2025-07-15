@@ -2,7 +2,6 @@ package com.java.luckyhankki.domain.review;
 
 import com.java.luckyhankki.domain.keyword.Keyword;
 import com.java.luckyhankki.domain.product.Product;
-import com.java.luckyhankki.domain.user.User;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -11,6 +10,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 리뷰는 최소 1개의 키워드를 선택해야한다.
+ * 별점은 1점부터 5점까지 선택해야 한다.
+ * 리뷰 내용 작성은 필수가 아니다.
+ */
 @Entity
 public class Review {
     @Id
@@ -18,9 +22,8 @@ public class Review {
     @Column(name = "review_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @Column(nullable = false)
+    private Long userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
@@ -49,12 +52,20 @@ public class Review {
 
     protected Review() {}
 
+    public Review(long userId, Product product, List<Keyword> keywords, int ratingScore, String content) {
+        this.userId = userId;
+        this.product = product;
+        this.keywords = keywords;
+        this.ratingScore = ratingScore;
+        this.content = content;
+    }
+
     public Long getId() {
         return id;
     }
 
-    public User getUser() {
-        return user;
+    public Long getUserId() {
+        return userId;
     }
 
     public Product getProduct() {
@@ -79,5 +90,11 @@ public class Review {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    @Override
+    public String toString() {
+        return "Review{id=%d, userId=%d, ratingScore=%d, content='%s', createdAt=%s, updatedAt=%s}"
+                .formatted(id, userId, ratingScore, content, createdAt, updatedAt);
     }
 }

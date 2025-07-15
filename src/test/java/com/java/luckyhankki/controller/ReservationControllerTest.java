@@ -42,6 +42,7 @@ class ReservationControllerTest {
 
     @Test
     @DisplayName("상품 예약 웹 테스트")
+    @WithMockUser(roles = "CUSTOMER")
     void reserveProduct() throws Exception {
         ReservationRequest request = new ReservationRequest(1L, 1L, 2);
         ReservationResponse response = new ReservationResponse("럭키비빔밥세트", 2, ReservationStatus.CONFIRMED.name());
@@ -65,6 +66,7 @@ class ReservationControllerTest {
 
     @Test
     @DisplayName("상품 예약 취소 웹 테스트")
+    @WithMockUser(roles = "SELLER")
     void cancelReservationByUser() throws Exception {
         Long userId = 1L;
         Long reservationId = 1L;
@@ -78,6 +80,7 @@ class ReservationControllerTest {
 
     @Test
     @DisplayName("가게 예약 목록 조회 웹 테스트")
+    @WithMockUser(roles = "SELLER")
     void getReservationListByStore() throws Exception {
         Long storeId = 1L;
         ReservationProjection mockProjection = new ReservationProjection() {
@@ -105,6 +108,7 @@ class ReservationControllerTest {
 
     @Test
     @DisplayName("가게-예약 내역 상세 조회 웹 테스트")
+    @WithMockUser(roles = "SELLER")
     void getDetailReservationByStore() throws Exception {
         long storeId = 1L;
         long reservationId = 1L;
@@ -138,6 +142,7 @@ class ReservationControllerTest {
 
     @Test
     @DisplayName("픽업 완료 처리 웹 테스트")
+    @WithMockUser(roles = "SELLER")
     void updateStatusCompleted() throws Exception {
         Long reservationId = 1L;
 

@@ -1,5 +1,6 @@
 package com.java.luckyhankki.config.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -18,7 +19,8 @@ public class SecurityConfig {
             "/products",
             "/products/**",
             "/categories/**",
-            "/stores/*"
+            "/stores/*",
+            "/keywords/*"
     };
 
     //permitAll POST URL
@@ -30,9 +32,11 @@ public class SecurityConfig {
     };
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final ObjectMapper objectMapper;
 
-    public SecurityConfig(JwtTokenProvider jwtTokenProvider) {
+    public SecurityConfig(JwtTokenProvider jwtTokenProvider, ObjectMapper objectMapper) {
         this.jwtTokenProvider = jwtTokenProvider;
+        this.objectMapper = objectMapper;
     }
 
     @Bean
@@ -55,8 +59,9 @@ public class SecurityConfig {
                                 //Swagger 관련 URL
                                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
-                                .requestMatchers(POST, "/categories", "/stores").hasRole("ADMIN")
-                                .requestMatchers(PUT, "/categories/**").hasRole("ADMIN")
+                                .requestMatchers(POST, "/categories", "/stores", "/keywords").hasRole("ADMIN")
+                                .requestMatchers(PUT, "/categories/**", "/keywords/**").hasRole("ADMIN")
+                                .requestMatchers(DELETE, "/keywords/**").hasRole("ADMIN")
 
                                 .requestMatchers(GET, "/stores/*/products", "/reservations/stores/**").hasAnyRole("SELLER", "ADMIN")
                                 .requestMatchers(POST, "/stores", "/products").hasRole("SELLER")
@@ -81,8 +86,8 @@ public class SecurityConfig {
                 //인증/인가 과정에서 예외가 발생하는 경우 사용할 핸들러 설정
                 .exceptionHandling((exceptionHandling) ->
                         exceptionHandling
-                                .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
-                                .accessDeniedHandler(new CustomAccessDeniedHandler()));
+                                .authenticationEntryPoint(new CustomAuthenticationEntryPoint(objectMapper))
+                                .accessDeniedHandler(new CustomAccessDeniedHandler(objectMapper)));
 
         return httpSecurity.build();
     }

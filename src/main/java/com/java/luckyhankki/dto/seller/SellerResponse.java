@@ -1,4 +1,4 @@
-package com.java.luckyhankki.dto;
+package com.java.luckyhankki.dto.seller;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

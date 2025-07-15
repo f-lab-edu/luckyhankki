@@ -5,6 +5,7 @@ import com.java.luckyhankki.domain.seller.Seller;
 import com.java.luckyhankki.domain.seller.SellerRepository;
 import com.java.luckyhankki.domain.user.User;
 import com.java.luckyhankki.domain.user.UserRepository;
+import com.java.luckyhankki.exception.ErrorCode;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -36,15 +37,15 @@ public class UnifiedUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         if (username.contains("@")) {
             User user = userRepository.findByEmail(username)
-                    .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
+                    .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.UNAUTHORIZED_USER.getMessage()));
             Set<SimpleGrantedAuthority> grantedAuthority = Set.of(new SimpleGrantedAuthority("ROLE_" + user.getRoleType().name()));
 
-            return new CustomUserDetails(user.getEmail(), user.getPassword(), grantedAuthority);
+            return new CustomUserDetails(user.getId(), user.getEmail(), user.getPassword(), grantedAuthority);
         } else {
             Seller seller = sellerRepository.findByBusinessNumber(username)
-                    .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
+                    .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.UNAUTHORIZED_USER.getMessage()));
 
-            return new CustomUserDetails(seller.getEmail(), seller.getPassword(), seller.getGrantedAuthority());
+            return new CustomUserDetails(seller.getId(), seller.getBusinessNumber(), seller.getPassword(), seller.getGrantedAuthority());
         }
     }
 }
