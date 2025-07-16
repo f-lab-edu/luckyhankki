@@ -16,7 +16,7 @@ public class Store {
     @Column(name = "store_id")
     private Long id;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_id")
     private Seller seller;
 
@@ -118,5 +118,9 @@ public class Store {
 
     public boolean isDeleted() {
         return isDeleted;
+    }
+
+    public void approve() {
+        isApproved = true;
     }
 }
