@@ -60,6 +60,7 @@ class ProductControllerTest {
     @BeforeEach
     void setUp() {
         CustomUserDetails mockUserDetails = new CustomUserDetails(
+                1L,
                 "test@test.com",
                 "password123@",
                 Set.of(new SimpleGrantedAuthority("ROLE_USER"))
