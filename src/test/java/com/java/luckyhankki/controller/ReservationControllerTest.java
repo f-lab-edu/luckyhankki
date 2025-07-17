@@ -27,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@WithMockUser
 @WebMvcTest(ReservationController.class)
 class ReservationControllerTest {
 
@@ -95,7 +96,8 @@ class ReservationControllerTest {
         given(service.getReservationListByStore(storeId))
                 .willReturn(List.of(mockProjection));
 
-        mockMvc.perform(get("/reservations/stores/{storeId}", storeId))
+        mockMvc.perform(get("/reservations/stores/{storeId}", storeId)
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1L))
                 .andExpect(jsonPath("$[0].productName").value("소금빵"))

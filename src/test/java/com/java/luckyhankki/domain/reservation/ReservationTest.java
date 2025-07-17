@@ -133,6 +133,18 @@ class ReservationTest {
         assertThat(optional.userPhone()).isEqualTo("2222");
     }
 
+    @Test
+    @DisplayName("유저ID와 상품ID로 예약 상태 조회")
+    public void findByUserIdAndProductId() {
+        Reservation reservation = getReservation();
+        reservation.setStatus(ReservationStatus.CONFIRMED);
+
+        ReservationStatusProjection statusProjection =
+                reservationRepository.findByUserIdAndProductId(user.getId(), product.getId()).get();
+        assertThat(statusProjection).isNotNull();
+        assertThat(statusProjection.getStatus()).isEqualTo(ReservationStatus.CONFIRMED);
+    }
+
     private Reservation getReservation() {
         Reservation reservation = new Reservation(user, product, 2);
 

@@ -1,11 +1,14 @@
 package com.java.luckyhankki.service;
 
+import com.java.luckyhankki.config.security.CustomUserDetails;
 import com.java.luckyhankki.domain.category.Category;
 import com.java.luckyhankki.domain.category.CategoryRepository;
 import com.java.luckyhankki.domain.product.Product;
 import com.java.luckyhankki.domain.product.ProductRepository;
 import com.java.luckyhankki.domain.store.Store;
 import com.java.luckyhankki.domain.store.StoreRepository;
+import com.java.luckyhankki.domain.user.UserLocationProjection;
+import com.java.luckyhankki.domain.user.UserRepository;
 import com.java.luckyhankki.dto.product.*;
 import com.java.luckyhankki.exception.CustomException;
 import com.java.luckyhankki.exception.ErrorCode;
@@ -25,11 +28,13 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final StoreRepository storeRepository;
     private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
 
-    public ProductService(ProductRepository productRepository, StoreRepository storeRepository, CategoryRepository categoryRepository) {
+    public ProductService(ProductRepository productRepository, StoreRepository storeRepository, CategoryRepository categoryRepository, UserRepository userRepository) {
         this.productRepository = productRepository;
         this.storeRepository = storeRepository;
         this.categoryRepository = categoryRepository;
+        this.userRepository = userRepository;
     }
 
     @Transactional
@@ -142,22 +147,33 @@ public class ProductService {
     }
 
     /**
-     * 고객이 조회 조건에 따른 상품 목록을 조회
+     * 고객이 조회 조건에 따른 상품 목록을 동적 조회
      */
     @Transactional(readOnly = true)
-    public Slice<ProductResponse> searchProductsByCondition(ProductSearchCondition condition, Pageable pageable) {
-        Slice<ProductResponse> products = productRepository.findAllByCondition(condition, pageable);
+    public Slice<ProductWithDistanceResponse> searchProductsByCondition(CustomUserDetails userDetails,
+                                                                        ProductSearchCondition searchCondition,
+                                                                        Pageable pageable) {
+        //TODO userId로 추후 변경
+        UserLocationProjection location = userRepository.findUserLocationProjectionByEmail(userDetails.getUsername());
+        double userLat = location.getLatitude().doubleValue();
+        double userLon = location.getLongitude().doubleValue();
 
-        return products.map(product -> new ProductResponse(
-                product.id(),
-                product.storeName(),
-                product.categoryName(),
-                product.name(),
-                product.priceOriginal(),
-                product.priceDiscount(),
-                product.stock(),
-                product.pickupStartDateTime(),
-                product.pickupEndDateTime()
+        ProductSearchRequest request = new ProductSearchRequest(searchCondition, userLat, userLon);
+        Slice<ProductWithDistanceResponse> products = productRepository.findAllByCondition(request, pageable);
+
+        return products.map(distanceResponse -> new ProductWithDistanceResponse(
+                new ProductResponse(
+                        distanceResponse.product().id(),
+                        distanceResponse.product().storeName(),
+                        distanceResponse.product().categoryName(),
+                        distanceResponse.product().name(),
+                        distanceResponse.product().priceOriginal(),
+                        distanceResponse.product().priceDiscount(),
+                        distanceResponse.product().stock(),
+                        distanceResponse.product().pickupStartDateTime(),
+                        distanceResponse.product().pickupEndDateTime()
+                ),
+                distanceResponse.distance()
         ));
     }
 

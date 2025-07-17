@@ -19,7 +19,8 @@ public class SecurityConfig {
             "/products",
             "/products/**",
             "/categories/**",
-            "/stores/*"
+            "/stores/*",
+            "/keywords/*"
     };
 
     //permitAll POST URL
@@ -59,8 +60,9 @@ public class SecurityConfig {
                                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
                                 .requestMatchers("/admins/**").hasRole("ADMIN")
-                                .requestMatchers(POST, "/categories", "/stores").hasRole("ADMIN")
-                                .requestMatchers(PUT, "/categories/**").hasRole("ADMIN")
+                                .requestMatchers(POST, "/categories", "/stores", "/keywords").hasRole("ADMIN")
+                                .requestMatchers(PUT, "/categories/**", "/keywords/**").hasRole("ADMIN")
+                                .requestMatchers(DELETE, "/keywords/**").hasRole("ADMIN")
 
                                 .requestMatchers(GET, "/stores/*/products", "/reservations/stores/**").hasAnyRole("SELLER", "ADMIN")
                                 .requestMatchers(POST, "/stores", "/products").hasRole("SELLER")
