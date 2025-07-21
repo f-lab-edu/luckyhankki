@@ -272,8 +272,9 @@ public class DummyDataLoader {
             String description = faker.lorem().paragraph();
 
             int priceOriginal = (faker.number().numberBetween(1000, 100_001) / 100) * 100;
-            int discountPercentage = faker.number().numberBetween(1, 100);
-            int priceDiscount = (int) (priceOriginal * (1 - discountPercentage / 100.0) / 100) * 100;
+            int discountPercentage = faker.number().numberBetween(1, 100); //1~99%
+            // 0원 방지(최소 100원)
+            int priceDiscount = Math.max(100, (int) (priceOriginal * (1 - discountPercentage / 100.0) / 100) * 100);
             int stock = faker.number().numberBetween(1, 11);
 
             LocalDateTime pickupStartDateTime = LocalDateTime.now().plusDays(faker.number().numberBetween(0, 366));
