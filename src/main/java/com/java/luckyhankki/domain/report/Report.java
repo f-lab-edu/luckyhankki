@@ -1,8 +1,6 @@
 package com.java.luckyhankki.domain.report;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.java.luckyhankki.domain.reservation.Reservation;
-import com.java.luckyhankki.domain.user.User;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -16,13 +14,11 @@ public class Report {
     @Column(name = "report_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reservation_id")
-    private Reservation reservation;
+    @Column(nullable = false)
+    private Long reservationId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @Column(nullable = false)
+    private Long userId;
 
     @Column(nullable = false)
     private String content;
@@ -30,6 +26,13 @@ public class Report {
     @JsonProperty("isCompleted")
     @Column(nullable = false)
     private boolean isCompleted;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ReportStatus status;
+
+    @Column
+    private String adminMemo;
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -41,16 +44,24 @@ public class Report {
 
     protected Report() {}
 
+    public Report(Long reservationId, Long userId, String content) {
+        this.reservationId = reservationId;
+        this.userId = userId;
+        this.content = content;
+        this.isCompleted = false;
+        this.status = ReportStatus.PENDING;
+    }
+
     public Long getId() {
         return id;
     }
 
-    public Reservation getReservation() {
-        return reservation;
+    public Long getReservationId() {
+        return reservationId;
     }
 
-    public User getUser() {
-        return user;
+    public Long getUserId() {
+        return userId;
     }
 
     public String getContent() {
@@ -61,11 +72,36 @@ public class Report {
         return isCompleted;
     }
 
+    public ReportStatus getStatus() {
+        return status;
+    }
+
+    public String getAdminMemo() {
+        return adminMemo;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    /**
+     * 관리자 신고 처리
+     * @param status    신고 상태(REJECTED or RESOLVED)
+     * @param adminMemo 처리 내용 메모
+     */
+    public void handleReport(ReportStatus status, String adminMemo) {
+        this.isCompleted = true;
+        this.status = status;
+        this.adminMemo = adminMemo;
+    }
+
+    @Override
+    public String toString() {
+        return "Report{id=%d, reservationId=%d, userId=%d, content='%s', isCompleted=%s, status=%s, adminMemo='%s', createdAt=%s, updatedAt=%s}"
+                .formatted(id, reservationId, userId, content, isCompleted, status, adminMemo, createdAt, updatedAt);
     }
 }

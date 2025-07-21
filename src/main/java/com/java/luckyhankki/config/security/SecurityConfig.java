@@ -69,8 +69,8 @@ public class SecurityConfig {
                                 .requestMatchers(PUT, "/stores/**", "/products/**", "/reservations/**").hasRole("SELLER")
                                 .requestMatchers(DELETE, "/stores/**", "/products/**").hasAnyRole("SELLER", "ADMIN")
 
-                                .requestMatchers(GET, "/reservations/**").hasAnyRole("CUSTOMER", "ADMIN")
-                                .requestMatchers(POST,"/reservations").hasRole("CUSTOMER")
+                                .requestMatchers(GET, "/reservations/**", "/reports").hasAnyRole("CUSTOMER", "ADMIN")
+                                .requestMatchers(POST,"/reservations", "/reports").hasRole("CUSTOMER")
 
                                 .requestMatchers(GET, WHITE_LIST_GET_URL).permitAll()
                                 .requestMatchers(POST, WHITE_LIST_POST_URL).permitAll()
