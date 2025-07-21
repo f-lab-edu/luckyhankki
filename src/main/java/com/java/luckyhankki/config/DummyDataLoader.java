@@ -222,7 +222,7 @@ public class DummyDataLoader {
             BigDecimal latitude = generateRandomLocation(MIN_LATITUDE, MAX_LATITUDE);
 
             Store store = new Store(seller, name, phone, address, longitude, latitude);
-            store.approve();
+            store.approveStore();
             stores.add(store);
 
             if ((i + 1) % batchSize == 0) {
@@ -232,7 +232,7 @@ public class DummyDataLoader {
     }
 
     private void batchInsertStores(List<Store> stores) {
-        String sql = "INSERT INTO store (seller_id, name, phone, address, longitude, latitude, is_approved, report_count, created_at, updated_at, is_deleted) " +
+        String sql = "INSERT INTO store (seller_id, name, phone, address, longitude, latitude, is_approved, report_count, created_at, updated_at, is_active) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
@@ -249,7 +249,7 @@ public class DummyDataLoader {
                 ps.setInt(8, store.getReportCount());
                 ps.setTimestamp(9, Timestamp.valueOf(LocalDateTime.now()));
                 ps.setTimestamp(10, Timestamp.valueOf(LocalDateTime.now()));
-                ps.setBoolean(11, store.isDeleted());
+                ps.setBoolean(11, store.isActive());
             }
 
             @Override

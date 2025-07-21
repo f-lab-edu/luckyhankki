@@ -150,11 +150,8 @@ public class Store {
 
     @Override
     public String toString() {
-        return "Store{id=%d, name='%s', phone='%s', address='%s', longitude=%s, latitude=%s, isApproved=%s, reportCount=%d, createdAt=%s, updatedAt=%s, isDeleted=%s}"
+        return "Store{id=%d, name='%s', phone='%s', address='%s', longitude=%s, latitude=%s, isApproved=%s, reportCount=%d, createdAt=%s, updatedAt=%s, isActive=%s}"
                 .formatted(id, name, phone, address, longitude, latitude, isApproved, reportCount, createdAt, updatedAt, isActive);
     }
 
-    public void approve() {
-        isApproved = true;
-    }
 }
