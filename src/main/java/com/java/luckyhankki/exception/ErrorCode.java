@@ -11,6 +11,7 @@ public enum ErrorCode {
     VALIDATION_FAILED(BAD_REQUEST, "VALIDATION_FAILED", "유효성 검사에 실패했습니다."),
     INVALID_PRICE_DISCOUNT(BAD_REQUEST, "INVALID_PRICE_DISCOUNT", "할인된 가격은 원가보다 클 수 없습니다."),
     INVALID_PICKUP_TIME_RANGE(BAD_REQUEST,"INVALID_PICKUP_TIME_RANGE", "픽업 시작 시각은 픽업 종료 시간보다 늦을 수 없습니다."),
+    ACTION_NOT_ALLOWED_BEFORE_PICKUP(BAD_REQUEST, "ACTION_NOT_ALLOWED_BEFORE_PICKUP", "픽업이 완료된 후에 작성할 수 있습니다."),
 
     /**
      * HttpStatus.UNAUTHORIZED : 401
@@ -32,6 +33,7 @@ public enum ErrorCode {
     CATEGORY_NOT_FOUND(NOT_FOUND, "CATEGORY_NOT_FOUND", "존재하지 않는 카테고리입니다."),
     RESERVATION_NOT_FOUND(NOT_FOUND, "RESERVATION_NOT_FOUND", "예약 내역이 존재하지 않습니다."),
     KEYWORD_NOT_FOUND(NOT_FOUND, "KEYWORD_NOT_FOUND", "존재하지 않는 키워드입니다."),
+    REPORT_NOT_FOUND(NOT_FOUND, "REPORT_NOT_FOUND", "존재하지 않는 신고입니다."),
 
     /**
      * HttpStatus.CONFLICT : 409
