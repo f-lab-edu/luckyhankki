@@ -12,9 +12,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,16 +42,23 @@ class AdminServiceTest {
     @Test
     @DisplayName("등록된 모든 가게 조회")
     void findAllStore() {
-        Store store1 = mock(Store.class);
-        Store store2 = mock(Store.class);
+        AdminStoreResponse store1 = new AdminStoreResponse(1L, "가게A", "010-1111-2222",
+                "경기도 수원시", true, 0, LocalDateTime.now());
+        AdminStoreResponse store2 = new AdminStoreResponse(2L, "가게B", "010-3333-2222",
+                "경기도 수원시", true, 0, LocalDateTime.now());
 
-        when(storeRepository.findAll()).thenReturn(List.of(store1, store2));
+        List<AdminStoreResponse> responses = List.of(store1, store2);
 
-        List<AdminStoreResponse> result = adminService.findAllStore();
+        PageRequest pageRequest = PageRequest.of(0, 50, Sort.by(Sort.Direction.ASC, "id"));
+        Page<AdminStoreResponse> storePage = new PageImpl<>(responses, pageRequest, responses.size());
+
+        when(storeRepository.findAllByIsActiveTrue(pageRequest)).thenReturn(storePage);
+
+        Page<AdminStoreResponse> result = adminService.findAllStore(pageRequest);
 
         assertThat(result).hasSize(2);
 
-        verify(storeRepository).findAll();
+        verify(storeRepository).findAllByIsActiveTrue(eq(pageRequest));
     }
 
     @Test

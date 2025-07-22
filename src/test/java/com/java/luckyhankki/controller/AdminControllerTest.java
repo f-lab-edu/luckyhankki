@@ -10,6 +10,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -60,17 +64,21 @@ class AdminControllerTest {
                 LocalDateTime.now()
         );
         List<AdminStoreResponse> responses = List.of(store1, store2);
-        given(adminService.findAllStore()).willReturn(responses);
+
+        PageRequest pageRequest = PageRequest.of(0, 50, Sort.by(Sort.Direction.ASC, "id"));
+        Page<AdminStoreResponse> storePage = new PageImpl<>(responses, pageRequest, responses.size());
+
+        given(adminService.findAllStore(pageRequest)).willReturn(storePage);
 
         mockMvc.perform(get("/admins/stores")
                         .with(csrf()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()").value(responses.size()))
-                .andExpect(jsonPath("$[0].name").value("길동카페"))
-                .andExpect(jsonPath("$[1].isApproved").value(false))
+                .andExpect(jsonPath("$.content.length()").value(responses.size()))
+                .andExpect(jsonPath("$.content[0].name").value("길동카페"))
+                .andExpect(jsonPath("$.content[1].isApproved").value(false))
                 .andDo(print());
 
-        verify(adminService).findAllStore();
+        verify(adminService).findAllStore(pageRequest);
     }
 
     @Test
