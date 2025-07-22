@@ -12,12 +12,13 @@ import com.java.luckyhankki.domain.user.UserRepository;
 import net.datafaker.Faker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -28,7 +29,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Profile("!test")
-@Configuration
+@Component
 public class DummyDataLoader {
 
     private static final Random random = new Random();
@@ -55,40 +56,39 @@ public class DummyDataLoader {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    @Bean
-    public CommandLineRunner initDatabase() {
-        return args -> {
-            if (userRepository.count() > 0 || sellerRepository.count() > 0) {
-                log.info("더미 데이터 생성을 건너뜁니다.");
-                return;
-            }
+    @EventListener(ApplicationReadyEvent.class)
+    @Transactional
+    public void init() {
+        if (userRepository.count() > 0 || sellerRepository.count() > 0) {
+            log.info("더미 데이터 생성을 건너뜁니다.");
+            return;
+        }
 
-            // 사용자(Users) 데이터 생성
-            log.info("사용자 더미 데이터 생성 시작");
-            generateUsers();
-            log.info("사용자 더미 데이터 생성 완료");
+        // 사용자(Users) 데이터 생성
+        log.info("사용자 더미 데이터 생성 시작");
+        generateUsers();
+        log.info("사용자 더미 데이터 생성 완료");
 
-            // 판매자(Seller) 데이터 생성
-            log.info("판매자 더미 데이터 생성 시작");
-            generateSellers();
-            log.info("판매자 더미 데이터 생성 완료");
+        // 판매자(Seller) 데이터 생성
+        log.info("판매자 더미 데이터 생성 시작");
+        generateSellers();
+        log.info("판매자 더미 데이터 생성 완료");
 
-            // 가게(Store) 데이터 생성
-            log.info("가게 더미 데이터 생성 시작");
-            List<Seller> sellers = sellerRepository.findAll();
-            Collections.shuffle(sellers, random);
-            generateStores(sellers);
-            log.info("가게 더미 데이터 생성 완료");
+        // 가게(Store) 데이터 생성
+        log.info("가게 더미 데이터 생성 시작");
+        List<Seller> sellers = sellerRepository.findAll();
+        Collections.shuffle(sellers, random);
+        generateStores(sellers);
+        log.info("가게 더미 데이터 생성 완료");
 
-            // 상품(Product) 데이터 생성
-            log.info("상품 더미 데이터 생성 시작");
-            List<Store> stores = storeRepository.findAll();
-            List<Category> categories = categoryRepository.findAll();
-            generateProducts(stores, categories);
-            log.info("상품 더미 데이터 생성 완료");
+        // 상품(Product) 데이터 생성
+        log.info("상품 더미 데이터 생성 시작");
+        List<Store> stores = storeRepository.findAll();
+        List<Category> categories = categoryRepository.findAll();
+        generateProducts(stores, categories);
+        log.info("상품 더미 데이터 생성 완료");
 
-            log.info("모든 더미 데이터 생성 완료");
-        };
+        log.info("모든 더미 데이터 생성 완료");
     }
 
     private void generateUsers() {
