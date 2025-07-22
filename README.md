@@ -102,6 +102,8 @@ http://localhost:8080/swagger-ui/index.html
 <img width="1450" height="544" alt="image" src="https://github.com/user-attachments/assets/477d56a6-6c51-4b9f-a6aa-14fd8d92d4e5" />
 
 - 그 외에는 유저 관련 API에서 회원 가입 및 로그인 후 발급되는 JWT 토큰을 발급받아야 합니다.
+  - 테스트용 사용자 이메일: user@test.com, 비밀번호: Test@!123
+  - 테스트용 관리자 이메일: admin@test.com, 비밀번호: Admin@!123
 - 발급된 토큰을 웹 페이지 상단 Authorize 버튼을 클릭하여 토큰을 Value에 입력 후 Authrozie 버튼을 클릭합니다.
 
 ---

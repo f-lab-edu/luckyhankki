@@ -8,7 +8,6 @@ import com.java.luckyhankki.domain.seller.SellerRepository;
 import com.java.luckyhankki.domain.store.Store;
 import com.java.luckyhankki.domain.store.StoreRepository;
 import com.java.luckyhankki.domain.user.User;
-import com.java.luckyhankki.domain.user.UserRepository;
 import net.datafaker.Faker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,14 +41,12 @@ public class DummyDataLoader {
     private static final double MAX_LONGITUDE = 38.450000; //극북
     private static final Logger log = LoggerFactory.getLogger(DummyDataLoader.class);
 
-    private final UserRepository userRepository;
     private final SellerRepository sellerRepository;
     private final StoreRepository storeRepository;
     private final CategoryRepository categoryRepository;
     private final JdbcTemplate jdbcTemplate;
 
-    public DummyDataLoader(UserRepository userRepository, SellerRepository sellerRepository, StoreRepository storeRepository, CategoryRepository categoryRepository, JdbcTemplate jdbcTemplate) {
-        this.userRepository = userRepository;
+    public DummyDataLoader(SellerRepository sellerRepository, StoreRepository storeRepository, CategoryRepository categoryRepository, JdbcTemplate jdbcTemplate) {
         this.sellerRepository = sellerRepository;
         this.storeRepository = storeRepository;
         this.categoryRepository = categoryRepository;
@@ -59,7 +56,7 @@ public class DummyDataLoader {
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void init() {
-        if (userRepository.count() > 0 || sellerRepository.count() > 0) {
+        if (sellerRepository.count() > 0) {
             log.info("더미 데이터 생성을 건너뜁니다.");
             return;
         }
