@@ -11,12 +11,11 @@ import com.java.luckyhankki.exception.CustomException;
 import com.java.luckyhankki.exception.ErrorCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 
 @Service
@@ -33,19 +32,8 @@ public class AdminService {
     }
 
     @Transactional(readOnly = true)
-    public List<AdminStoreResponse> findAllStore() {
-        return storeRepository.findAll()
-                .stream()
-                .map(store -> new AdminStoreResponse(
-                        store.getId(),
-                        store.getName(),
-                        store.getPhone(),
-                        store.getAddress(),
-                        store.isApproved(),
-                        store.getReportCount(),
-                        store.getCreatedAt()
-                ))
-                .toList();
+    public Page<AdminStoreResponse> findAllStore(Pageable pageable) {
+        return storeRepository.findAllByIsActiveTrue(pageable);
     }
 
     @Transactional(readOnly = true)

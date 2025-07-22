@@ -1,23 +1,19 @@
 package com.java.luckyhankki.controller;
 
-import com.java.luckyhankki.dto.admin.AdminStoreResponse;
-import com.java.luckyhankki.dto.admin.AdminStoreWithSellerResponse;
-import com.java.luckyhankki.dto.admin.AdminReportHandleRequest;
-import com.java.luckyhankki.dto.admin.AdminReportHandleResponse;
-import com.java.luckyhankki.dto.admin.AdminReportListResponse;
+import com.java.luckyhankki.dto.admin.*;
 import com.java.luckyhankki.service.AdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 
 /**
@@ -35,13 +31,10 @@ public class AdminController {
         this.adminService = adminService;
     }
 
-    @Operation(summary = "등록된 모든 가게 조회", description = "관리자가 등록된 가게 목록을 조회합니다.")
+    @Operation(summary = "등록된 활성화된 모든 가게 조회", description = "관리자가 등록된 가게 목록을 조회합니다.")
     @GetMapping("/stores")
-    public ResponseEntity<List<AdminStoreResponse>> findAllStore() {
-        List<AdminStoreResponse> stores = adminService.findAllStore();
-
-        return ResponseEntity.status(HttpStatus.OK).body(stores);
-
+    public Page<AdminStoreResponse> findAllStore(@PageableDefault(size = 50, sort = "id") @ParameterObject Pageable pageable) {
+        return adminService.findAllStore(pageable);
     }
 
     @Operation(summary = "가게 및 판매자 조회", description = "관리자가 가게 ID에 해당하는 가게 및 판매자 정보를 조회합니다.")
