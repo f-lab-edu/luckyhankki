@@ -18,3 +18,10 @@
 
 - **상품 API**, **판매자 API**, **유저 API** 등으로 분류되어 있으며,
 - 각 항목을 클릭하면 요청/응답 형식과 예제 값을 확인할 수 있습니다.
+
+---
+
+## 📌 트러블슈팅
+
+- [테스트 시 Spring Security 인증 객체 주입 오류 해결](https://github.com/f-lab-edu/luckyhankki/wiki/%ED%85%8C%EC%8A%A4%ED%8A%B8-%EC%8B%9C-Spring-Security-%EC%9D%B8%EC%A6%9D-%EA%B0%9D%EC%B2%B4-%EC%A3%BC%EC%9E%85-%EC%98%A4%EB%A5%98-%ED%95%B4%EA%B2%B0)
+- [대규모 더미 데이터 생성 시 N+1 문제 해결](https://github.com/f-lab-edu/luckyhankki/wiki/%EB%8C%80%EA%B7%9C%EB%AA%A8-%EB%8D%94%EB%AF%B8-%EB%8D%B0%EC%9D%B4%ED%84%B0-%EC%83%9D%EC%84%B1-%EC%8B%9C-N-1-%EB%AC%B8%EC%A0%9C-%ED%95%B4%EA%B2%B0)
