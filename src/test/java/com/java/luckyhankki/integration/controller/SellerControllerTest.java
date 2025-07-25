@@ -1,6 +1,7 @@
-package com.java.luckyhankki.controller;
+package com.java.luckyhankki.integration.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.java.luckyhankki.controller.SellerController;
 import com.java.luckyhankki.dto.seller.SellerRequest;
 import com.java.luckyhankki.dto.seller.SellerResponse;
 import com.java.luckyhankki.service.AuthService;

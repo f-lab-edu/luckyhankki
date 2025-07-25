@@ -1,6 +1,7 @@
-package com.java.luckyhankki.controller;
+package com.java.luckyhankki.integration.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.java.luckyhankki.controller.CategoryController;
 import com.java.luckyhankki.domain.category.Category;
 import com.java.luckyhankki.exception.CustomException;
 import com.java.luckyhankki.exception.ErrorCode;

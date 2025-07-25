@@ -1,6 +1,7 @@
-package com.java.luckyhankki.controller;
+package com.java.luckyhankki.integration.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.java.luckyhankki.controller.KeywordController;
 import com.java.luckyhankki.dto.keyword.KeywordRequest;
 import com.java.luckyhankki.dto.keyword.KeywordResponse;
 import com.java.luckyhankki.service.KeywordService;
