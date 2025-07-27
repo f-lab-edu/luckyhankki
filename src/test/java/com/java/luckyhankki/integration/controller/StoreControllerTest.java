@@ -1,28 +1,33 @@
 package com.java.luckyhankki.integration.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.java.luckyhankki.config.security.CustomUserDetails;
 import com.java.luckyhankki.controller.StoreController;
 import com.java.luckyhankki.dto.product.ProductResponse;
 import com.java.luckyhankki.dto.store.StoreRequest;
 import com.java.luckyhankki.dto.store.StoreResponse;
 import com.java.luckyhankki.service.ProductService;
 import com.java.luckyhankki.service.StoreService;
+import com.java.luckyhankki.service.UnifiedUserDetailsService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.test.context.support.TestExecutionEvent;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -31,7 +36,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(StoreController.class)
-@WithMockUser(username = "test", roles = "SELLER")
+@WithUserDetails(
+        value = "1234567890",
+        userDetailsServiceBeanName = "unifiedUserDetailsService",
+        setupBefore = TestExecutionEvent.TEST_EXECUTION
+)
 class StoreControllerTest {
 
     @Autowired
@@ -45,6 +54,23 @@ class StoreControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @MockBean(name = "unifiedUserDetailsService")
+    private UnifiedUserDetailsService unifiedUserDetailsService;
+
+    @BeforeEach
+    void setUp() {
+        CustomUserDetails mockUserDetails = new CustomUserDetails(
+                1L,
+                "1234567890",
+                "password123@",
+                Set.of(new SimpleGrantedAuthority("ROLE_SELLER"))
+        );
+
+        doReturn(mockUserDetails)
+                .when(unifiedUserDetailsService)
+                .loadUserByUsername("1234567890");
+    }
 
     @Test
     @DisplayName("가게 등록 웹 테스트")
@@ -69,7 +95,7 @@ class StoreControllerTest {
         given(storeService.registerStore((any(Long.class)),any(StoreRequest.class)))
                 .willReturn(storeResponse);
 
-        mockMvc.perform(post("/stores?sellerId=1")
+        mockMvc.perform(post("/stores")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(storeRequest))
                         .with(csrf()))
@@ -97,7 +123,7 @@ class StoreControllerTest {
         given(storeService.findStore(any(Long.class)))
                 .willReturn(storeResponse);
 
-        mockMvc.perform(get("/stores/{sellerId}", 1)
+        mockMvc.perform(get("/stores")
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L))
@@ -120,7 +146,7 @@ class StoreControllerTest {
         given(productService.getAllProductsByStore(storeId, null))
                 .willReturn(products);
 
-        mockMvc.perform(get("/stores/{storeId}/products", storeId)
+        mockMvc.perform(get("/stores/products")
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size()").value(2))

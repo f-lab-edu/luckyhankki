@@ -58,7 +58,6 @@ class StoreTest {
         );
 
         Store savedStore = storeRepository.save(store);
-        System.out.println(savedStore.getId());
 
         Store result = storeRepository.findStoreAndSellerById(savedStore.getId());
         assertThat(result.getName()).isEqualTo(savedStore.getName());

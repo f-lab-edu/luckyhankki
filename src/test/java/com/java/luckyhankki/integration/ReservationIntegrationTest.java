@@ -251,7 +251,7 @@ public class ReservationIntegrationTest {
         for (int i = 0; i < threadCount; i++) {
             executorService.submit(() -> {
                 try {
-                    reservationService.reserveProduct(new ReservationRequest(productId, userId, quantityPerRequest));
+                    reservationService.reserveProduct(userId, new ReservationRequest(productId, quantityPerRequest));
                     successCount.incrementAndGet();
                 } catch (Exception e) {
                     System.err.println("Reservation failed: " + e.getMessage());

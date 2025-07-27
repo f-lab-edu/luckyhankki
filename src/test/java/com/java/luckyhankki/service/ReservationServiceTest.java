@@ -8,11 +8,12 @@ import com.java.luckyhankki.domain.reservation.ReservationProjection;
 import com.java.luckyhankki.domain.reservation.ReservationRepository;
 import com.java.luckyhankki.domain.reservation.ReservationStatus;
 import com.java.luckyhankki.domain.store.Store;
+import com.java.luckyhankki.domain.store.StoreProjection;
+import com.java.luckyhankki.domain.store.StoreRepository;
 import com.java.luckyhankki.domain.user.User;
 import com.java.luckyhankki.domain.user.UserRepository;
 import com.java.luckyhankki.dto.reservation.*;
 import com.java.luckyhankki.exception.CustomException;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,6 +48,9 @@ class ReservationServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private StoreRepository storeRepository;
+
     @Test
     @DisplayName("상품 예약 성공")
     void reserveProduct_success() {
@@ -70,13 +74,13 @@ class ReservationServiceTest {
                 LocalDateTime.now().plusHours(2)
         );
 
-        ReservationRequest request = new ReservationRequest(productId, userId, quantity);
+        ReservationRequest request = new ReservationRequest(productId, quantity);
 
         when(userRepository.getReferenceById(userId)).thenReturn(user);
         when(productRepository.findByIdWithLock(productId)).thenReturn(Optional.of(product));
         when(reservationRepository.save(any(Reservation.class))).then(returnsFirstArg());
 
-        ReservationResponse reservation = service.reserveProduct(request);
+        ReservationResponse reservation = service.reserveProduct(userId, request);
 
         assertThat(reservation.productName()).isEqualTo("비빔밥");
         assertThat(reservation.quantity()).isEqualTo(quantity);
@@ -141,6 +145,7 @@ class ReservationServiceTest {
     @DisplayName("가게 예약 목록 조회 성공")
     void getReservationListByStore_success() {
         // given
+        Long sellerId = 1L;
         Long storeId = 1L;
         ReservationProjection mockProjection = new ReservationProjection() {
             @Override public Long getId() { return 1L; }
@@ -151,26 +156,32 @@ class ReservationServiceTest {
             @Override public String getStatus() { return "CONFIRMED"; }
             @Override public LocalDateTime getCreatedAt() { return LocalDateTime.now(); }
         };
+        StoreProjection storeProjection = mock(StoreProjection.class);
 
+        given(storeProjection.getId()).willReturn(storeId);
+        given(storeRepository.findStoreBySellerId(sellerId))
+                .willReturn(Optional.of(storeProjection));
         given(reservationRepository.findAllByStoreId(storeId))
                 .willReturn(List.of(mockProjection));
 
         // when
-        List<ReservationProjection> result = service.getReservationListByStore(storeId);
+        List<ReservationProjection> result = service.getReservationListByStore(sellerId);
 
         // then
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getProductName()).isEqualTo("소금빵");
         assertThat(result.get(0).getTotalPrice()).isEqualTo(6000);
 
+        verify(storeRepository).findStoreBySellerId(sellerId);
         verify(reservationRepository).findAllByStoreId(storeId);
     }
 
     @Test
     @DisplayName("가게 입장에서의 예약 상세 조회")
     void getReservationDetailsByStore() {
-        long reservationId = 1L;
-        long storeId = 1L;
+        Long reservationId = 1L;
+        Long storeId = 1L;
+        Long sellerId = 1L;
 
         User user = mock(User.class);
         Product product = mock(Product.class);
@@ -194,6 +205,11 @@ class ReservationServiceTest {
                 LocalDateTime.now()
         );
 
+        StoreProjection storeProjection = mock(StoreProjection.class);
+
+        given(storeProjection.getId()).willReturn(storeId);
+        given(storeRepository.findStoreBySellerId(sellerId))
+                .willReturn(Optional.of(storeProjection));
         when(reservationRepository.findByIdAndProductStoreId(reservationId, storeId))
                 .thenReturn(mockResponse);
 
@@ -205,26 +221,28 @@ class ReservationServiceTest {
         assertThat(result.userName()).isEqualTo("홍길동");
         assertThat(result.userPhone()).isEqualTo("5678");
 
+        verify(storeRepository).findStoreBySellerId(sellerId);
         verify(reservationRepository).findByIdAndProductStoreId(reservationId, storeId);
     }
 
     @Test
     @DisplayName("픽업 완료 테스트")
     void updateStatusCompleted() {
-        long reservationId = 1L;
+        Long sellerId = 1L;
+        Long reservationId = 1L;
 
         User user = mock(User.class);
         Product product = mock(Product.class);
 
         Reservation reservation = new Reservation(user, product, 2);
-        when(reservationRepository.findById(reservationId))
+        when(reservationRepository.findByIdAndSellerId(reservationId, sellerId))
                 .thenReturn(Optional.of(reservation));
 
-        service.updateStatusCompleted(reservationId);
+        service.updateStatusCompleted(reservationId, sellerId);
 
         assertThat(reservation.getStatus()).isEqualTo(ReservationStatus.COMPLETED);
 
-        verify(reservationRepository).findById(reservationId);
+        verify(reservationRepository).findByIdAndSellerId(reservationId, sellerId);
     }
 
     @Test

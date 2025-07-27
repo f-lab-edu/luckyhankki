@@ -1,6 +1,7 @@
 package com.java.luckyhankki.integration.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.java.luckyhankki.config.security.CustomUserDetails;
 import com.java.luckyhankki.controller.ReservationController;
 import com.java.luckyhankki.domain.reservation.ReservationProjection;
 import com.java.luckyhankki.domain.reservation.ReservationStatus;
@@ -8,19 +9,27 @@ import com.java.luckyhankki.dto.reservation.ReservationRequest;
 import com.java.luckyhankki.dto.reservation.ReservationResponse;
 import com.java.luckyhankki.dto.reservation.StoreReservationDetailResponse;
 import com.java.luckyhankki.service.ReservationService;
+import com.java.luckyhankki.service.UnifiedUserDetailsService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.test.context.support.TestExecutionEvent;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -28,8 +37,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WithMockUser
+
 @WebMvcTest(ReservationController.class)
+@WithUserDetails(
+        value = "test@test.com",
+        userDetailsServiceBeanName = "unifiedUserDetailsService",
+        setupBefore = TestExecutionEvent.TEST_EXECUTION
+)
 class ReservationControllerTest {
 
     @Autowired
@@ -41,16 +55,31 @@ class ReservationControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @MockBean(name = "unifiedUserDetailsService")
+    private UnifiedUserDetailsService unifiedUserDetailsService;
+
+    @BeforeEach
+    void setUp() {
+        CustomUserDetails mockUserDetails = new CustomUserDetails(
+                1L,
+                "test@test.com",
+                "password123@",
+                Set.of(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+
+        doReturn(mockUserDetails)
+                .when(unifiedUserDetailsService)
+                .loadUserByUsername("test@test.com");
+    }
+
     @Test
     @DisplayName("상품 예약 웹 테스트")
-    @WithMockUser(roles = "CUSTOMER")
     void reserveProduct() throws Exception {
-        ReservationRequest request = new ReservationRequest(1L, 1L, 2);
+        Long userId = 1L;
+        ReservationRequest request = new ReservationRequest(1L,  2);
         ReservationResponse response = new ReservationResponse("럭키비빔밥세트", 2, ReservationStatus.CONFIRMED.name());
 
-        given(service.reserveProduct(request)).willReturn(response);
-
-        System.out.println(objectMapper.writeValueAsString(response));
+        given(service.reserveProduct(userId, request)).willReturn(response);
 
         mockMvc.perform(post("/reservations")
                         .content(objectMapper.writeValueAsString(request))
@@ -62,17 +91,16 @@ class ReservationControllerTest {
                 .andExpect(jsonPath("$.status").value("CONFIRMED"))
                 .andDo(print());
 
-        verify(service).reserveProduct(request);
+        verify(service).reserveProduct(userId, request);
     }
 
     @Test
     @DisplayName("상품 예약 취소 웹 테스트")
-    @WithMockUser(roles = "SELLER")
     void cancelReservationByUser() throws Exception {
         Long userId = 1L;
         Long reservationId = 1L;
 
-        mockMvc.perform(delete("/reservations/{userId}/{reservationId}", userId, reservationId)
+        mockMvc.perform(delete("/reservations/{reservationId}", reservationId)
                         .with(csrf()))
                 .andExpect(status().isOk());
 
@@ -81,7 +109,6 @@ class ReservationControllerTest {
 
     @Test
     @DisplayName("가게 예약 목록 조회 웹 테스트")
-    @WithMockUser(roles = "SELLER")
     void getReservationListByStore() throws Exception {
         Long storeId = 1L;
         ReservationProjection mockProjection = new ReservationProjection() {
@@ -97,7 +124,7 @@ class ReservationControllerTest {
         given(service.getReservationListByStore(storeId))
                 .willReturn(List.of(mockProjection));
 
-        mockMvc.perform(get("/reservations/stores/{storeId}", storeId)
+        mockMvc.perform(get("/reservations/stores")
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1L))
@@ -109,7 +136,6 @@ class ReservationControllerTest {
 
     @Test
     @DisplayName("가게-예약 내역 상세 조회 웹 테스트")
-    @WithMockUser(roles = "SELLER")
     void getDetailReservationByStore() throws Exception {
         long storeId = 1L;
         long reservationId = 1L;
@@ -131,7 +157,7 @@ class ReservationControllerTest {
         given(service.getReservationDetailsByStore(reservationId, storeId))
                 .willReturn(response);
 
-        mockMvc.perform(get("/reservations/stores/{storeId}/{reservationId}", storeId, reservationId)
+        mockMvc.perform(get("/reservations/stores/{reservationId}", reservationId)
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.productName").value("1인럭키세트"))
@@ -143,7 +169,6 @@ class ReservationControllerTest {
 
     @Test
     @DisplayName("픽업 완료 처리 웹 테스트")
-    @WithMockUser(roles = "SELLER")
     void updateStatusCompleted() throws Exception {
         Long reservationId = 1L;
 
@@ -151,6 +176,6 @@ class ReservationControllerTest {
                         .with(csrf()))
                 .andExpect(status().isNoContent());
 
-        verify(service).updateStatusCompleted(reservationId);
+        verify(service).updateStatusCompleted(any(Long.class), eq(reservationId));
     }
 }

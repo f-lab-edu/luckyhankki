@@ -23,6 +23,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -154,5 +155,16 @@ class ProductTest {
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).distance()).isBetween(BigDecimal.valueOf(2.23), BigDecimal.valueOf(2.25));
         assertThat(result.getContent().get(0).product().name()).isEqualTo("소금빵");
+    }
+
+    @Test
+    @DisplayName("판매자 ID와 상품 ID로 상품 조회")
+    void testFindByIdAndStore_Seller_Id() {
+        Long productId = productRepository.findAll().get(0).getId();
+        Long sellerId = sellerRepository.findAll().get(0).getId();
+
+        Optional<Product> product = productRepository.findByIdAndStore_Seller_Id(productId, sellerId);
+
+        assertThat(product.isPresent()).isTrue();
     }
 }

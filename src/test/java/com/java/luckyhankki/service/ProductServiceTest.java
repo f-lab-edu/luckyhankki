@@ -5,6 +5,8 @@ import com.java.luckyhankki.domain.category.Category;
 import com.java.luckyhankki.domain.category.CategoryRepository;
 import com.java.luckyhankki.domain.product.Product;
 import com.java.luckyhankki.domain.product.ProductRepository;
+import com.java.luckyhankki.domain.reservation.ReservationRepository;
+import com.java.luckyhankki.domain.reservation.ReservationStatus;
 import com.java.luckyhankki.domain.store.Store;
 import com.java.luckyhankki.domain.store.StoreRepository;
 import com.java.luckyhankki.domain.user.UserLocationProjection;
@@ -53,10 +55,14 @@ class ProductServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private ReservationRepository reservationRepository;
+
     @Test
     @DisplayName("승인된 가게에서 상품 추가 성공")
     void addProduct_success() {
         //given
+        long sellerId = 1L;
         long storeId = 1L;
         long categoryId = 1L;
         ProductRequest request = new ProductRequest(
@@ -71,7 +77,7 @@ class ProductServiceTest {
 
         //Store mock
         Store store = mock(Store.class);
-        when(storeRepository.findByIdAndIsApprovedTrue(storeId))
+        when(storeRepository.findBySellerIdAndIsApprovedTrue(sellerId))
                 .thenReturn(Optional.of(store));
 
         //Category mock
@@ -88,6 +94,7 @@ class ProductServiceTest {
         assertEquals(10000, product.priceOriginal());
         assertEquals(request.pickupStartDateTime(), product.pickupStartDateTime());
 
+        verify(storeRepository).findBySellerIdAndIsApprovedTrue(sellerId);
         verify(productRepository).save(any(Product.class));
     }
 
@@ -139,6 +146,7 @@ class ProductServiceTest {
     @DisplayName("미승인된 상태에서 상품 등록할 경우 예외 발생")
     void addProduct_throwsException_whenStoreIsNotApproved() {
         // given
+        long sellerId = 1L;
         long storeId = 1L;
         long categoryId = 1L;
 
@@ -153,25 +161,27 @@ class ProductServiceTest {
                 LocalDateTime.now().plusHours(2)
         );
 
-        when(storeRepository.findByIdAndIsApprovedTrue(storeId))
+        when(storeRepository.findBySellerIdAndIsApprovedTrue(sellerId))
                 .thenReturn(Optional.empty());
 
         CustomException exception = assertThrows(CustomException.class, () -> service.addProduct(storeId, request));
         assertEquals("아직 승인되지 않은 가게입니다. 관리자 승인 후 상품 등록이 가능합니다.", exception.getMessage());
 
-        verify(storeRepository).findByIdAndIsApprovedTrue(storeId);
+        verify(storeRepository).findBySellerIdAndIsApprovedTrue(storeId);
     }
 
     @Test
     @DisplayName("가게에 등록된 모든 상품 목록 조회")
     void getAllProducts_ByStore_whenActiveIsNull() {
-        long storeId = 1L;
+        Long sellerId = 1L;
+        Long storeId = 1L;
         List<ProductResponse> responseList = getProductResponses(false);
 
+        when(storeRepository.findIdBySellerId(sellerId)).thenReturn(storeId);
         when(productRepository.findAllByStoreId(storeId))
                 .thenReturn(responseList);
 
-        List<ProductResponse> result = service.getAllProductsByStore(storeId, null);
+        List<ProductResponse> result = service.getAllProductsByStore(sellerId, null);
 
         assertEquals(2, result.size());
 
@@ -181,13 +191,15 @@ class ProductServiceTest {
     @Test
     @DisplayName("가게에 등록된 활성화된 상품만 목록 조회")
     void getAllProducts_ByStore_whenActiveIsTrue() {
-        long storeId = 1L;
+        Long sellerId = 1L;
+        Long storeId = 1L;
         List<ProductResponse> responseList = getProductResponses(true);
 
+        when(storeRepository.findIdBySellerId(sellerId)).thenReturn(storeId);
         when(productRepository.findAllByStoreIdAndIsActiveTrue(storeId))
                 .thenReturn(responseList);
 
-        List<ProductResponse> result = service.getAllProductsByStore(storeId, true);
+        List<ProductResponse> result = service.getAllProductsByStore(sellerId, true);
 
         assertEquals(1, result.size());
 
@@ -204,12 +216,13 @@ class ProductServiceTest {
                 ProductSearchCondition.SortType.PRICE);
 
         CustomUserDetails userDetails = Mockito.mock(CustomUserDetails.class);
-        when(userDetails.getUsername()).thenReturn("user@email.com");
+        when(userDetails.getUserId()).thenReturn(1L);
 
+        Long userId = userDetails.getUserId();
         double userLon = 126.976112;
         double userLat = 37.586671;
 
-        when(userRepository.findUserLocationProjectionByEmail(any(String.class)))
+        when(userRepository.findUserLocationProjectionById(userId))
                 .thenReturn(new UserLocationProjection() {
                     @Override
                     public BigDecimal getLongitude() {
@@ -230,7 +243,7 @@ class ProductServiceTest {
         when(productRepository.findAllByCondition(any(ProductSearchRequest.class), eq(pageable)))
                 .thenReturn(slice);
 
-        Slice<ProductWithDistanceResponse> result = service.searchProductsByCondition(userDetails, condition, pageable);
+        Slice<ProductWithDistanceResponse> result = service.searchProductsByCondition(userId, condition, pageable);
 
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(1);
@@ -278,6 +291,7 @@ class ProductServiceTest {
     @Test
     @DisplayName("상품 업데이트 테스트")
     void updateProduct_success() {
+        long sellerId = 1L;
         long productId = 1L;
         Store store = mock(Store.class);
         Category category = mock(Category.class);
@@ -294,7 +308,7 @@ class ProductServiceTest {
                 LocalDateTime.now().plusHours(2)
         );
 
-        when(productRepository.findById(productId))
+        when(productRepository.findByIdAndStore_Seller_Id(productId, sellerId))
                 .thenReturn(Optional.of(product));
 
         ProductUpdateRequest request = new ProductUpdateRequest(
@@ -308,11 +322,71 @@ class ProductServiceTest {
                 null
         );
 
-        service.updateProduct(productId, request);
+        service.updateProduct(sellerId, productId, request);
 
         assertThat(product.getName()).isEqualTo("우동");
         assertThat(product.getStock()).isEqualTo(2);
         assertThat(product.getPriceOriginal()).isEqualTo(10000);
+    }
+
+    @Test
+    @DisplayName("상품 삭제 성공")
+    void deleteProduct_success() {
+        Long sellerId = 1L;
+        Long productId = 1L;
+        Store store = mock(Store.class);
+        Category category = mock(Category.class);
+
+        Product product = new Product(
+                store,
+                category,
+                "비빔밥",
+                10000,
+                8000,
+                1,
+                "육회비빔밥 입니다.",
+                LocalDateTime.now().plusHours(1),
+                LocalDateTime.now().plusHours(2)
+        );
+
+        when(productRepository.findByIdAndStore_Seller_Id(productId, sellerId))
+                .thenReturn(Optional.of(product));
+        when(reservationRepository.existsByProductIdAndStatusIn(productId, List.of(ReservationStatus.PENDING, ReservationStatus.CONFIRMED)))
+                .thenReturn(false);
+
+        service.deleteProduct(sellerId, productId);
+
+        verify(productRepository).delete(product);
+    }
+
+    @Test
+    @DisplayName("상품 삭제 실패")
+    void deleteProduct_throwsException_whenStatusIsInPending() {
+        Long sellerId = 1L;
+        Long productId = 1L;
+        Store store = mock(Store.class);
+        Category category = mock(Category.class);
+
+        Product product = new Product(
+                store,
+                category,
+                "비빔밥",
+                10000,
+                8000,
+                1,
+                "육회비빔밥 입니다.",
+                LocalDateTime.now().plusHours(1),
+                LocalDateTime.now().plusHours(2)
+        );
+
+        when(productRepository.findByIdAndStore_Seller_Id(productId, sellerId))
+                .thenReturn(Optional.of(product));
+        when(reservationRepository.existsByProductIdAndStatusIn(productId, List.of(ReservationStatus.PENDING, ReservationStatus.CONFIRMED)))
+                .thenReturn(true);
+
+        CustomException exception = assertThrows(CustomException.class, () -> service.deleteProduct(sellerId, productId));
+
+        assertThat(exception.getMessage()).isEqualTo("이미 예약된 상품은 삭제할 수 없습니다.");
     }
 
     private static List<ProductResponse> getProductResponses(boolean isActive) {

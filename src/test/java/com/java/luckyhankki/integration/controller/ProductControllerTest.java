@@ -284,7 +284,7 @@ class ProductControllerTest {
         Slice<ProductWithDistanceResponse> slice = new SliceImpl<>(content, pageable, true);
 
         given(productService.searchProductsByCondition(
-                    any(CustomUserDetails.class),
+                    any(Long.class),
                     any(ProductSearchCondition.class),
                     any(Pageable.class)))
                 .willReturn(slice);
@@ -301,6 +301,7 @@ class ProductControllerTest {
     @Test
     @DisplayName("상품 업데이트 웹 테스트")
     void updateProduct() throws Exception {
+        Long sellerId = 1L;
         Long productId = 1L;
         ProductUpdateRequest productUpdateRequest = new ProductUpdateRequest(
                 null,
@@ -320,18 +321,19 @@ class ProductControllerTest {
                 .andExpect(status().isNoContent())
                 .andDo(print());
 
-        verify(productService).updateProduct(eq(productId), any(ProductUpdateRequest.class));
+        verify(productService).updateProduct(eq(sellerId), eq(productId), any(ProductUpdateRequest.class));
     }
 
     @Test
     @DisplayName("hard delete 웹 테스트")
     void deleteProduct() throws Exception {
+        Long sellerId = 1L;
         Long productId = 1L;
 
         mockMvc.perform(delete("/products/{productId}", productId)
                         .with(csrf()))
                 .andExpect(status().isOk());
 
-        verify(productService).deleteProduct(eq(productId));
+        verify(productService).deleteProduct(eq(sellerId), eq(productId));
     }
 }

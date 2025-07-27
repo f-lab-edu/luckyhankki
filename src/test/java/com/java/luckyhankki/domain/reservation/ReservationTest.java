@@ -21,6 +21,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -49,6 +50,7 @@ class ReservationTest {
     private User user;
     private Product product;
     private Store store;
+    private Seller seller;
 
     @BeforeEach
     void setUp() {
@@ -59,7 +61,7 @@ class ReservationTest {
         user = userRepository.save(user);
 
         // 판매자, 매장, 카테고리, 상품 생성
-        Seller seller = new Seller("1234567890", "김사장", "abc#@123", "ceo@test.com");
+        seller = new Seller("1234567890", "김사장", "abc#@123", "ceo@test.com");
         seller = sellerRepository.save(seller);
 
         store = new Store(seller, "길동국밥", "031-111-2222",
@@ -143,6 +145,16 @@ class ReservationTest {
                 reservationRepository.findByUserIdAndProductId(user.getId(), product.getId()).get();
         assertThat(statusProjection).isNotNull();
         assertThat(statusProjection.getStatus()).isEqualTo(ReservationStatus.CONFIRMED);
+    }
+
+    @Test
+    @DisplayName("예약ID와 판매자 ID로 예약 내역 조회")
+    void findByIdAndSellerId() {
+        Reservation reservation = getReservation();
+
+        Optional<Reservation> result = reservationRepository.findByIdAndSellerId(reservation.getId(), seller.getId());
+
+        assertThat(result).isNotNull();
     }
 
     private Reservation getReservation() {
