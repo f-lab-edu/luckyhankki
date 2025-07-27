@@ -30,4 +30,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, Product
 
     //픽업 시간이 경과되고 활성화 상태의 상품만 모두 조회
     Page<Product> findAllByPickupEndDateTimeBeforeAndIsActiveTrue(LocalDateTime now, Pageable pageable);
+
+    //상품 ID와 판매자 ID에 해당하는 상품 조회
+    Optional<Product> findByIdAndStore_Seller_Id(Long id, Long sellerId);
 }

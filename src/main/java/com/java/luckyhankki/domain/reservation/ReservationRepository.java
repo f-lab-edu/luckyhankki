@@ -45,4 +45,15 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             "WHERE r.user.id = :userId AND p.id = :productId")
     Optional<ReservationStatusProjection> findByUserIdAndProductId(@Param("userId") Long userId,
                                                                    @Param("productId") Long productId);
+
+    //상품 ID 및 예약 상태가 PENDING 또는 CONFIRMED에 해당하는 예약 내역 존재 여부 조회
+    boolean existsByProductIdAndStatusIn(@Param("productId") Long productId, List<ReservationStatus> status);
+
+    //예약 ID와 판매자 ID에 해당하는 예약 내역 조회
+    @Query("SELECT r FROM Reservation r " +
+            "JOIN FETCH r.product p " +
+            "JOIN FETCH p.store s " +
+            "JOIN FETCH s.seller sel " +
+            "WHERE r.id = :reservationId AND sel.id = :sellerId")
+    Optional<Reservation> findByIdAndSellerId(@Param("reservationId") Long reservationId, @Param("sellerId") Long sellerId);
 }

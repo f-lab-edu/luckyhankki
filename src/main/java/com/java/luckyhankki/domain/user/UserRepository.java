@@ -9,5 +9,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmail(String username);
 
-    UserLocationProjection findUserLocationProjectionByEmail(String email);
+    UserLocationProjection findUserLocationProjectionById(Long id);
 }

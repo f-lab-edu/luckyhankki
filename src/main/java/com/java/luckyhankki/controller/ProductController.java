@@ -29,10 +29,10 @@ public class ProductController {
     @Operation(summary = "상품 등록", description = "판매자가 상품을 등록합니다.")
     @PostMapping
     public ResponseEntity<ProductResponse> addProduct(
-            @Parameter(description = "가게 ID") @RequestParam Long storeId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody ProductRequest request) {
 
-        ProductResponse product = service.addProduct(storeId, request);
+        ProductResponse product = service.addProduct(userDetails.getUserId(), request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(product);
     }
@@ -58,22 +58,26 @@ public class ProductController {
             @Parameter(description = "상품 조회 조건") ProductSearchCondition condition,
             @ParameterObject Pageable pageable) {
 
-        return service.searchProductsByCondition(userDetails, condition, pageable);
+        return service.searchProductsByCondition(userDetails.getUserId(), condition, pageable);
     }
 
     @Operation(summary = "상품 수정", description = "상품 ID에 해당하는 상품을 수정합니다.")
     @PutMapping("/{productId}")
-    public ResponseEntity<Void> updateProduct(@Parameter(description = "상품 ID") @PathVariable Long productId,
+    public ResponseEntity<Void> updateProduct(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                              @Parameter(description = "상품 ID") @PathVariable Long productId,
                                               @Valid @RequestBody ProductUpdateRequest request) {
-        service.updateProduct(productId, request);
+
+        service.updateProduct(userDetails.getUserId(), productId, request);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @Operation(summary = "상품 삭제", description = "상품 ID에 해당하는 상품을 삭제합니다.")
     @DeleteMapping("/{productId}")
-    public ResponseEntity<Void> deleteProduct(@Parameter(description = "상품 ID") @PathVariable Long productId) {
-        service.deleteProduct(productId);
+    public ResponseEntity<Void> deleteProduct(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                              @Parameter(description = "상품 ID") @PathVariable Long productId) {
+
+        service.deleteProduct(userDetails.getUserId(), productId);
 
         return ResponseEntity.status(HttpStatus.OK).build();
     }

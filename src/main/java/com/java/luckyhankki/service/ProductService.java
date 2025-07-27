@@ -1,10 +1,11 @@
 package com.java.luckyhankki.service;
 
-import com.java.luckyhankki.config.security.CustomUserDetails;
 import com.java.luckyhankki.domain.category.Category;
 import com.java.luckyhankki.domain.category.CategoryRepository;
 import com.java.luckyhankki.domain.product.Product;
 import com.java.luckyhankki.domain.product.ProductRepository;
+import com.java.luckyhankki.domain.reservation.ReservationRepository;
+import com.java.luckyhankki.domain.reservation.ReservationStatus;
 import com.java.luckyhankki.domain.store.Store;
 import com.java.luckyhankki.domain.store.StoreRepository;
 import com.java.luckyhankki.domain.user.UserLocationProjection;
@@ -29,16 +30,18 @@ public class ProductService {
     private final StoreRepository storeRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final ReservationRepository reservationRepository;
 
-    public ProductService(ProductRepository productRepository, StoreRepository storeRepository, CategoryRepository categoryRepository, UserRepository userRepository) {
+    public ProductService(ProductRepository productRepository, StoreRepository storeRepository, CategoryRepository categoryRepository, UserRepository userRepository, ReservationRepository reservationRepository) {
         this.productRepository = productRepository;
         this.storeRepository = storeRepository;
         this.categoryRepository = categoryRepository;
         this.userRepository = userRepository;
+        this.reservationRepository = reservationRepository;
     }
 
     @Transactional
-    public ProductResponse addProduct(Long storeId, ProductRequest request) {
+    public ProductResponse addProduct(Long sellerId, ProductRequest request) {
         if (request.priceDiscount() > request.priceOriginal()) {
             throw new CustomException(ErrorCode.INVALID_PRICE_DISCOUNT);
         }
@@ -51,7 +54,7 @@ public class ProductService {
         }
 
         //가게 승인이 된 상태여야 상품 등록 가능
-        Store store = storeRepository.findByIdAndIsApprovedTrue(storeId)
+        Store store = storeRepository.findBySellerIdAndIsApprovedTrue(sellerId)
                 .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_APPROVED));
 
         Category category = categoryRepository.findById(request.categoryId())
@@ -88,7 +91,9 @@ public class ProductService {
      * 판매자가 자신의 가게에 등록된 상품 목록을 조회
      */
     @Transactional(readOnly = true)
-    public List<ProductResponse> getAllProductsByStore(Long storeId, Boolean active) {
+    public List<ProductResponse> getAllProductsByStore(Long sellerId, Boolean active) {
+        Long storeId = storeRepository.findIdBySellerId(sellerId);
+
         //active가 null이거나 false이면 active 활성화 여부와 상관 없이 모두 조회
         if (active == null || !active) {
             return productRepository.findAllByStoreId(storeId);
@@ -150,11 +155,11 @@ public class ProductService {
      * 고객이 조회 조건에 따른 상품 목록을 동적 조회
      */
     @Transactional(readOnly = true)
-    public Slice<ProductWithDistanceResponse> searchProductsByCondition(CustomUserDetails userDetails,
+    public Slice<ProductWithDistanceResponse> searchProductsByCondition(Long userId,
                                                                         ProductSearchCondition searchCondition,
                                                                         Pageable pageable) {
-        //TODO userId로 추후 변경
-        UserLocationProjection location = userRepository.findUserLocationProjectionByEmail(userDetails.getUsername());
+
+        UserLocationProjection location = userRepository.findUserLocationProjectionById(userId);
         double userLat = location.getLatitude().doubleValue();
         double userLon = location.getLongitude().doubleValue();
 
@@ -178,8 +183,8 @@ public class ProductService {
     }
 
     @Transactional
-    public void updateProduct(Long productId, ProductUpdateRequest request) {
-        Product product = productRepository.findById(productId)
+    public void updateProduct(Long sellerId, Long productId, ProductUpdateRequest request) {
+        Product product = productRepository.findByIdAndStore_Seller_Id(productId, sellerId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
 
         if (request.categoryId() != null) {
@@ -192,9 +197,19 @@ public class ProductService {
     }
 
     @Transactional
-    public void deleteProduct(Long productId) {
-        //if 예약건이 없는 경우
-        productRepository.deleteById(productId);
-        //else 예외 던지기
+    public void deleteProduct(Long sellerId, Long productId) {
+        Product product = productRepository.findByIdAndStore_Seller_Id(productId, sellerId)
+                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        boolean hasActiveReservation = reservationRepository.existsByProductIdAndStatusIn(
+                productId,
+                List.of(ReservationStatus.PENDING, ReservationStatus.CONFIRMED)
+        );
+
+        if (hasActiveReservation) {
+            throw new CustomException(ErrorCode.PRODUCT_ALREADY_RESERVED);
+        }
+
+        productRepository.delete(product);
     }
 }

@@ -11,10 +11,6 @@ public record ReservationRequest(
         @NotNull
         long productId,
 
-        @Schema(description = "유저 ID", example = "1")
-        @NotNull
-        long userId,
-
         @Schema(description = "수량", example = "2")
         @NotNull
         @Positive(message = "수량은 1개 이상부터 선택 가능합니다.")

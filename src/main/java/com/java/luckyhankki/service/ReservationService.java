@@ -6,12 +6,13 @@ import com.java.luckyhankki.domain.reservation.Reservation;
 import com.java.luckyhankki.domain.reservation.ReservationProjection;
 import com.java.luckyhankki.domain.reservation.ReservationRepository;
 import com.java.luckyhankki.domain.reservation.ReservationStatus;
+import com.java.luckyhankki.domain.store.StoreProjection;
+import com.java.luckyhankki.domain.store.StoreRepository;
 import com.java.luckyhankki.domain.user.User;
 import com.java.luckyhankki.domain.user.UserRepository;
 import com.java.luckyhankki.dto.reservation.*;
 import com.java.luckyhankki.exception.CustomException;
 import com.java.luckyhankki.exception.ErrorCode;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -26,16 +27,18 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final StoreRepository storeRepository;
 
-    public ReservationService(ReservationRepository reservationRepository, ProductRepository productRepository, UserRepository userRepository) {
+    public ReservationService(ReservationRepository reservationRepository, ProductRepository productRepository, UserRepository userRepository, StoreRepository storeRepository) {
         this.reservationRepository = reservationRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
+        this.storeRepository = storeRepository;
     }
 
     @Transactional
-    public ReservationResponse reserveProduct(ReservationRequest request) {
-        User user = userRepository.getReferenceById(request.userId());
+    public ReservationResponse reserveProduct(Long userId, ReservationRequest request) {
+        User user = userRepository.getReferenceById(userId);
         Product product = productRepository.findByIdWithLock(request.productId())
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
 
@@ -108,10 +111,14 @@ public class ReservationService {
     }
 
     /**
-     * 가게 ID에 해당하는 모든 예약 목록 조회
+     * 가게의 모든 예약 목록 중 예약 상태가 CONFIRMED와 COMPLETED인 목록 조회
      */
     @Transactional(readOnly = true)
-    public List<ReservationProjection> getReservationListByStore(Long storeId) {
+    public List<ReservationProjection> getReservationListByStore(Long sellerId) {
+        Long storeId = storeRepository.findStoreBySellerId(sellerId)
+                .map(StoreProjection::getId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND));
+
         return reservationRepository.findAllByStoreId(storeId);
     }
 
@@ -119,7 +126,11 @@ public class ReservationService {
      * 가게에 예약 내역 상세 조회
      */
     @Transactional(readOnly = true)
-    public StoreReservationDetailResponse getReservationDetailsByStore(Long reservationId, Long storeId) {
+    public StoreReservationDetailResponse getReservationDetailsByStore(Long reservationId, Long sellerId) {
+        Long storeId = storeRepository.findStoreBySellerId(sellerId)
+                .map(StoreProjection::getId)
+                .orElseThrow(() -> new CustomException(ErrorCode.STORE_NOT_FOUND));
+
         return reservationRepository.findByIdAndProductStoreId(reservationId, storeId);
     }
 
@@ -127,8 +138,8 @@ public class ReservationService {
      * 픽업 처리
      */
     @Transactional
-    public void updateStatusCompleted(Long reservationId) {
-        Reservation reservation = reservationRepository.findById(reservationId)
+    public void updateStatusCompleted(Long reservationId, Long sellerId) {
+        Reservation reservation = reservationRepository.findByIdAndSellerId(reservationId, sellerId)
                 .orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_NOT_FOUND));
 
         reservation.setStatus(ReservationStatus.COMPLETED);

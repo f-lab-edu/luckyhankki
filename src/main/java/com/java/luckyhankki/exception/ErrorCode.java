@@ -46,6 +46,7 @@ public enum ErrorCode {
     KEYWORD_ALREADY_EXISTS(CONFLICT, "KEYWORD_ALREADY_EXISTS", "이미 존재하는 키워드입니다."),
     KEYWORD_ALREADY_DELETED(CONFLICT, "KEYWORD_ALREADY_DELETED", "이미 삭제된 키워드입니다."),
     KEYWORD_UPDATE_CONFLICT(CONFLICT, "KEYWORD_UPDATE_CONFLICT", "잠시 후 다시 시도해 주세요. 키워드 수정 중 충돌이 발생했습니다."),
+    PRODUCT_ALREADY_RESERVED(CONFLICT, "PRODUCT_ALREADY_RESERVED", "이미 예약된 상품은 삭제할 수 없습니다."),
 
     /**
      * HttpStatus.INTERNAL_SERVER_ERROR : 500

@@ -16,10 +16,8 @@ public class SecurityConfig {
 
     //permitAll GET URL
     private static final String[] WHITE_LIST_GET_URL = {
-            "/products",
             "/products/**",
             "/categories/**",
-            "/stores/*",
             "/keywords/*"
     };
 
@@ -64,13 +62,14 @@ public class SecurityConfig {
                                 .requestMatchers(PUT, "/categories/**", "/keywords/**").hasRole("ADMIN")
                                 .requestMatchers(DELETE, "/keywords/**").hasRole("ADMIN")
 
-                                .requestMatchers(GET, "/stores/*/products", "/reservations/stores/**").hasAnyRole("SELLER", "ADMIN")
+                                .requestMatchers(GET, "/stores/**", "/reservations/stores/**").hasAnyRole("SELLER", "ADMIN")
                                 .requestMatchers(POST, "/stores", "/products").hasRole("SELLER")
                                 .requestMatchers(PUT, "/stores/**", "/products/**", "/reservations/**").hasRole("SELLER")
                                 .requestMatchers(DELETE, "/stores/**", "/products/**").hasAnyRole("SELLER", "ADMIN")
 
-                                .requestMatchers(GET, "/reservations/**", "/reports").hasAnyRole("CUSTOMER", "ADMIN")
-                                .requestMatchers(POST,"/reservations", "/reports").hasRole("CUSTOMER")
+                                .requestMatchers(GET, "/reservations/**", "/reports/**", "/reviews").hasAnyRole("CUSTOMER", "ADMIN")
+                                .requestMatchers(POST,"/reservations", "/reports", "/reviews").hasRole("CUSTOMER")
+                                .requestMatchers(DELETE, "/reservations/**", "/reviews/**").hasRole("CUSTOMER")
 
                                 .requestMatchers(GET, WHITE_LIST_GET_URL).permitAll()
                                 .requestMatchers(POST, WHITE_LIST_POST_URL).permitAll()
