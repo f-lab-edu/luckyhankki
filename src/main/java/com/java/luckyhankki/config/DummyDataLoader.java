@@ -35,10 +35,10 @@ public class DummyDataLoader {
     private static final Faker faker = new Faker(new Locale("ko", "kr"));
 
     // 대한민국의 경도와 위도 범위
-    private static final double MIN_LATITUDE = 125.066666; //극서
-    private static final double MAX_LATITUDE = 131.872222; //극동
-    private static final double MIN_LONGITUDE = 33.100000; //극남
-    private static final double MAX_LONGITUDE = 38.450000; //극북
+    private static final double MIN_LONGITUDE = 125.066666; //극서
+    private static final double MAX_LONGITUDE = 131.872222; //극동
+    private static final double MIN_LATITUDE  = 33.100000; //극남
+    private static final double MAX_LATITUDE  = 38.450000; //극북
     private static final Logger log = LoggerFactory.getLogger(DummyDataLoader.class);
 
     private final SellerRepository sellerRepository;
